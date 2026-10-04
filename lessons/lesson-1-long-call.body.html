@@ -1,0 +1,109 @@
+<div class="hero">
+  <p class="kicker">第 1 课 · Novice — BASIC</p>
+  <h1>Long Call <span class="cn">买入看涨期权</span></h1>
+  <p class="tagline">花小钱，租一个「涨了就赚、跌了最多亏光权利金」的权利。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>付权利金</b><span>买入 1 张 Call<br>Strike K，到期日 T</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>获得权利</b><span>到期日按 K 买入正股<br>是权利，不是义务</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>到期二选一</b><span>涨超 K 就执行 / 卖掉<br>没涨过就放弃，亏光权利金</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：Strike K = $100，权利金 = $6。拖动滑杆，看不同到期股价下的单股盈亏。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="70" max="140" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">权利金</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">K + 权利金</div></div>
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">无限</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +</span><span>股价涨 1 元，期权涨约 delta 元；越涨涨得越快</span></div>
+  <div class="greek"><span class="badge pos">Gamma +</span><span>凸性是你的朋友，加速站在你这边</span></div>
+  <div class="greek"><span class="badge neg">Theta −</span><span>每天扣时间价值，越临近到期扣得越狠</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>波动率上升期权变贵；反过来 IV crush 直接打脸</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>方向判断很强、又想把最大亏损钉死的时候</li>
+    <li>想加杠杆但不想爆仓：同方向敞口，花零头钱</li>
+    <li>LEAPS 形态：把 long call 当长期股票替代品（租敞口不买断）</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · IV Crush</p>
+  <p class="body">财报前一天高 IV 买入 long call，财报大涨 5% 结果还亏钱——涨幅全被波动率落地的贬值吃掉了。<b>方向看对、输给买贵。</b></p>
+</div>
+
+<div class="card">
+  <p class="sec">落到实盘</p>
+  <ul class="ul">
+    <li><b>AAPL 2028-01-21 250C / 280C</b>：PMCC 的长腿，long call 当股票替代品用</li>
+    <li><b>LITX 计划</b>：回调到 $25 附近买 2029 年 deep ITM call（delta 0.7+），时间损耗小，约等于打折的股票</li>
+    <li>裸买短期 call 基本不在武器库里——卖方为主，买方只玩这两种形态</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Long call 到期最大亏损是多少？</summary><p><span class="ans">你付的权利金。</span>亏光为止，不会再多一分——这就是买方「风险有限」的含义。</p></details>
+  <details><summary>Q2 · 财报前高 IV 买入，财报大涨 5% 却亏钱，最可能的原因？</summary><p><span class="ans">IV crush。</span>波动率落地带来的贬值吃掉了股价上涨的利润。</p></details>
+</div>
+
+<script>
+(function(){
+var K=100, PREM=6;
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=70,xMax=140,plMin=-12,plMax=34;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+var pl=function(s){return Math.max(0,s-K)-PREM;};
+var be=K+PREM, s;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+var lossPts='';for(s=xMin;s<=be;s+=2){lossPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:padL+','+Y(0)+' '+lossPts+X(be)+','+Y(0),fill:'rgba(239,68,68,.12)'});
+var profPts='';for(s=be;s<=xMax;s+=2){profPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:X(be)+','+Y(0)+' '+profPts+X(xMax)+','+Y(0),fill:'rgba(34,197,94,.12)'});
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(K),y1:padT,x2:X(K),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(K),H-10,'K=100');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-10,'B/E=106','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(70),H-10,'70');txt(X(140),H-10,'140');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
