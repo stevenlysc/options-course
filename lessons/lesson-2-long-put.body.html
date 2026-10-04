@@ -1,0 +1,110 @@
+<div class="hero">
+  <p class="kicker">第 2 课 · Novice — BASIC</p>
+  <h1>Long Put <span class="cn">买入看跌期权</span></h1>
+  <p class="tagline">Long Call 的镜像：花小钱，租一个「跌了就赚、涨了最多亏光权利金」的权利。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>付权利金</b><span>买入 1 张 Put<br>Strike K，到期日 T</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>获得权利</b><span>到期日按 K 卖出正股<br>是权利，不是义务</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>到期二选一</b><span>跌破 K 就行权 / 卖掉<br>没跌破就放弃，亏光权利金</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：Strike K = $100，权利金 = $6。拖动滑杆，看不同到期股价下的单股盈亏。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="60" max="140" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">权利金</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">K − 权利金</div></div>
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">K − 权利金</div></div>
+  </div>
+  <p class="muted" style="margin-top:8px">和 call 不同：put 的盈利有顶——股价最低跌到 0，所以最大盈利 = K − 权利金（理论极限）。</p>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge neg">Delta −</span><span>股价跌 1 元，期权涨约 |delta| 元；方向和 call 反过来</span></div>
+  <div class="greek"><span class="badge pos">Gamma +</span><span>越跌加速越快——暴跌时 put 价格会"爆"，加速感比 call 更强</span></div>
+  <div class="greek"><span class="badge neg">Theta −</span><span>每天扣时间价值，越临近到期扣得越狠</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>恐慌时波动率飙升，put 跟着水涨船高（这也是对冲起效的原因）</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>看跌方向表达、风险有限：觉得要跌，又不想冒裸卖空的无限风险</li>
+    <li>给手里的正股 / 多头买保险——那就是第 5 课 protective put</li>
+    <li>组合里的一条腿：bear put spread（第 17 课）的 long leg 就是它</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 慢跌磨死</p>
+  <p class="body">Put 怕的不是看错方向，是<b>跌得太慢</b>：股价阴跌、始终不破 B/E，theta 每天扣血，权利金被时间磨光。Long put 要的是「又快又狠」的下跌，温水煮青蛙是它的坟场。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>Put 怕慢跌</b>：阴跌不破 B/E，theta 会把权利金磨光——long put 要的是又快又狠的下跌，温水煮青蛙是它的坟场</li>
+    <li><b>先分清买的是保险还是彩票</b>：给正股买 put 对冲是保险（第 5 课），裸买 put 赌方向是投机——两种心态，两种管法</li>
+    <li><b>别在恐慌顶点追 put</b>：暴跌时 put 靠 gamma 会"爆"，但顶点买入的 put 带着极高的 IV，波动率一回落就摔得很惨</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Long put 的最大盈利是多少？</summary><p><span class="ans">K − 权利金。</span>股价最低跌到 0，所以盈利有顶——这是 put 和 call 最大的不对称。</p></details>
+  <details><summary>Q2 · Long put 的 delta 是正还是负？股价暴跌时它会怎么变？</summary><p><span class="ans">负。</span>股价越跌，delta 越负（gamma 作用），put 涨得越来越快——这就是暴跌时 put 价格"爆"的原因。</p></details>
+</div>
+
+<script>
+(function(){
+var K=100, PREM=6;
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=60,xMax=140,plMin=-12,plMax=40;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+var pl=function(s){return Math.max(0,K-s)-PREM;};
+var be=K-PREM, s;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+var lossPts='';for(s=be;s<=xMax;s+=2){lossPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:X(be)+','+Y(0)+' '+lossPts+X(xMax)+','+Y(0),fill:'rgba(239,68,68,.12)'});
+var profPts='';for(s=xMin;s<=be;s+=2){profPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:padL+','+Y(0)+' '+profPts+X(be)+','+Y(0),fill:'rgba(34,197,94,.12)'});
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(K),y1:padT,x2:X(K),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(K),H-10,'K=100');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-10,'B/E=94','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(60),H-10,'60');txt(X(140),H-10,'140');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

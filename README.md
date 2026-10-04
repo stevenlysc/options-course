@@ -23,6 +23,14 @@ deploy_cf.py               # 发布 Worker `options-course` + 确保 /options �
 3. `python3 build.py && python3 deploy_cf.py`
 4. curl 带 `?v=随机` 核验（边缘节点偶发短暂旧缓存）
 
+## 课件版式规范
+
+每课固定 8 节：hero → 结构 → 交互 Payoff → 关键数字 → 希腊字母 → 适用场景 →
+最常见的死法 → **实战小贴士** → 随堂小测。
+
+最后一节必须是通用实战 tips（3-4 条），不写具体持仓、不写会过期的数字——
+课件是长期资产，持仓每天都在变。
+
 ## 部署说明
 
 - Cloudflare Worker 名：`options-course`

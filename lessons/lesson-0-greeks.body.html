@@ -55,12 +55,12 @@
 </div>
 
 <div class="card">
-  <p class="sec">落到你的实盘</p>
+  <p class="sec">实战小贴士</p>
   <ul class="ul">
-    <li><b>Delta 当概率尺</b>：卖 put 筛子 delta ≤ 0.25，本质是"只卖 75% 概率站岗的仓位"</li>
-    <li><b>0DTE iron fly 的命门是 gamma</b>：到期日 ATM gamma 极大，SPX 一动 delta 就翻脸——所以你的止损是"触及 B/E ±2 全平"，不给 gamma 发作的时间</li>
-    <li><b>你的收入结构</b>：short theta（每天收租）+ short vega（卖波动）；承担的风险：short gamma（大涨大跌时亏得加速）</li>
-    <li><b>LEAPS（AAPL 250C/280C）</b>：期限长 vega 大，IV 起伏对它们影响明显，买的时候别在 IV 高点接</li>
+    <li><b>Delta 当概率尺</b>：卖出期权时用 |delta| 粗估到期实值概率——delta 0.25 的 put，约 75% 概率虚值到期</li>
+    <li><b>0DTE 的命门是 gamma</b>：到期日 ATM gamma 极大，标的一动 delta 就翻脸——日内策略必须设硬止损，不给 gamma 发作的时间</li>
+    <li><b>卖方的收入结构</b>：short theta（每天收租）+ short vega（卖波动）；承担的风险是 short gamma（大涨大跌时亏得加速）</li>
+    <li><b>买 LEAPS 看 vega</b>：长期限期权 vega 大，IV 高点买入的话，波动率回落会吃掉不少价值</li>
   </ul>
 </div>
 
