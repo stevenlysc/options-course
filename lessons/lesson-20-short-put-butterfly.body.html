@@ -11,13 +11,13 @@
     <div class="arr">→</div>
     <div class="step"><b>买入 2×100P</b><span>身体<br>付钱</span></div>
     <div class="arr">→</div>
-    <div class="step"><b>净收 $2</b><span>走开就赚<br>钉住亏满 $3</span></div>
+    <div class="step"><b>净收 $1</b><span>走开就赚<br>钉住亏满 $4</span></div>
   </div>
 </div>
 
 <div class="card">
   <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
-  <p class="muted">示例：卖出 95P/105P，买入 2×100P，净收 $2。形状像"山谷"——和 long 蝴蝶正好反过来。</p>
+  <p class="muted">示例：卖出 95P/105P，买入 2×100P，净收 $1。形状像"山谷"——和 long 蝴蝶正好反过来。</p>
   <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
   <input id="px" type="range" min="85" max="115" value="100" step="1" class="slider">
   <p id="plread" class="readout"></p>
@@ -26,9 +26,9 @@
 <div class="card">
   <p class="sec">三个关键数字</p>
   <div class="kpis">
-    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$2（两翼之外）</div></div>
-    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">97 / 103</div></div>
-    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$3（S=100 钉住）</div></div>
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$1（两翼之外）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">96 / 104</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$4（S=100 钉住）</div></div>
   </div>
 </div>
 
@@ -51,7 +51,7 @@
 
 <div class="card warn">
   <p class="sec">最常见的死法 · 钉在中间</p>
-  <p class="body">股价钉在 100 不动，亏满 $3。<b>Short 蝴蝶怕的恰恰是 long 蝴蝶爱的东西</b>——组之前先问自己：我到底赌的是"动"还是"不动"？</p>
+  <p class="body">股价钉在 100 不动，亏满 $4。<b>Short 蝴蝶怕的恰恰是 long 蝴蝶爱的东西</b>——组之前先问自己：我到底赌的是"动"还是"不动"？</p>
 </div>
 
 <div class="card">
@@ -59,6 +59,7 @@
   <ul class="ul">
     <li><b>与 long put butterfly 镜像</b>：long 怕偏离、short 怕钉住——开仓前先站队</li>
     <li><b>Short 蝴蝶的时间是敌人</b>：没走开之前 theta 每天烧钱，大波动才是朋友</li>
+    <li><b>三个课是同一个头寸</b>：short put 版、short call 版（第 21 课）、inverse iron 版（第 18 课）在 put-call parity 下完全等价——数字都一样：净收 $1、钉住亏 $4、B/E 96/104。区别只在搭法：看 skew 和流动性选边</li>
     <li><b>选流动性好的 strike</b>：3 条腿，滑点吃三遍</li>
   </ul>
 </div>
@@ -66,7 +67,7 @@
 <div class="card">
   <p class="sec">随堂小测</p>
   <details><summary>Q1 · Long 和 short 蝴蝶，谁更怕时间流逝？</summary><p><span class="ans">Short 蝴蝶。</span>没走开之前，theta 每天烧钱；long 蝴蝶钉在中间时，时间反而是朋友。</p></details>
-  <details><summary>Q2 · Short put butterfly 的最大盈利在哪？</summary><p><span class="ans">两翼之外（≤95 或 ≥105）。</span>走开得越远，赚得越满，上限 $2。</p></details>
+  <details><summary>Q2 · Short put butterfly 的最大盈利在哪？</summary><p><span class="ans">两翼之外（≤95 或 ≥105）。</span>走开得越远，赚得越满，上限 $1。</p></details>
 </div>
 
 <script>
@@ -86,8 +87,8 @@ function shade(a,b,color){
   el('polygon',{points:pts,fill:color});
 }
 var M=Math.max;
-var pl=function(s){return -M(0,95-s)+2*M(0,100-s)-M(0,105-s)+2;};
-var s, be1=97, be2=103;
+var pl=function(s){return -M(0,95-s)+2*M(0,100-s)-M(0,105-s)+1;};
+var s, be1=96, be2=104;
 el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
 shade(xMin,be1,'rgba(34,197,94,.12)');
 shade(be1,be2,'rgba(239,68,68,.12)');
@@ -97,9 +98,9 @@ el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
 el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
 txt(X(100),H-10,'中心 100（最惨）');
 el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
-txt(X(be1),H-24,'97','#f59e0b');
+txt(X(be1),H-24,'96','#f59e0b');
 el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
-txt(X(be2),H-24,'103','#f59e0b');
+txt(X(be2),H-24,'104','#f59e0b');
 txt(16,Y(0)-5,'0');txt(X(85),H-10,'85');txt(X(115),H-10,'115');
 var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
 var read=document.getElementById('plread');
