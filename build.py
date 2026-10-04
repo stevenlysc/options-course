@@ -27,7 +27,7 @@ def main():
     # --- index ---
     tiers_html = []
     done = 0
-    for tier in ["Novice", "Intermediate", "Advanced", "Expert"]:
+    for tier in ["预备", "Novice", "Intermediate", "Advanced", "Expert"]:
         tls = [l for l in lessons if l["tier"] == tier]
         rows = []
         for l in tls:
@@ -53,6 +53,7 @@ def main():
             + "\n".join(rows))
     index_html = (index_tpl
                   .replace("{{TIERS}}", "\n".join(tiers_html))
+                  .replace("{{TOTAL}}", str(len(lessons)))
                   .replace("{{DONE}}", str(done))
                   .replace("{{PCT}}", f"{done / len(lessons) * 100:.1f}"))
 
@@ -77,6 +78,7 @@ def main():
             next_link = '<a class="next disabled"><span>下一课 ›</span>待更新</a>'
         html = (lesson_tpl
                 .replace("{{PAGE_TITLE}}", f'第 {l["n"]} 课 · {l["en"]}')
+                .replace("{{TOTAL}}", str(len(lessons)))
                 .replace("{{N}}", str(l["n"]))
                 .replace("{{BODY}}", body)
                 .replace("{{PREV_LINK}}", prev_link)

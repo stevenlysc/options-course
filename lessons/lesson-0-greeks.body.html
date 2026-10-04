@@ -1,0 +1,108 @@
+<div class="hero">
+  <p class="kicker">第 0 课 · 预备</p>
+  <h1>The Greeks <span class="cn">希腊字母</span></h1>
+  <p class="tagline">期权价格的仪表盘：五个字母，告诉你价格对什么敏感、敏感多少。</p>
+</div>
+
+<div class="card">
+  <p class="sec">先建立直觉</p>
+  <p class="body">期权价格受五个变量影响：股价、时间、波动率、利率、行权价。Greeks 就是"价格对每个变量的敏感度"——<b>Delta</b> 管方向，<b>Gamma</b> 管加速度，<b>Theta</b> 管时间，<b>Vega</b> 管波动率，<b>Rho</b> 管利率。后面 58 节课里，每个策略的"希腊字母脾气"都是这五个字母的排列组合。</p>
+</div>
+
+<div class="card">
+  <p class="sec">Delta · 方向盘</p>
+  <p class="body">股价涨 1 元，期权涨多少。Call 为正、Put 为负，范围 0~1（call）/ −1~0（put）。<br><b>实用读法</b>：|Delta| 粗略 ≈ 到期实值的概率。Delta 0.25 的 put，大约 25% 概率到期实值——<b>你的卖 put 筛子（delta ≤ 0.25）用的就是这把尺。</b></p>
+</div>
+
+<div class="card">
+  <p class="sec">Gamma · 油门</p>
+  <p class="body">Delta 的变化率——方向盘转得有多快。买方爱它（涨起来加速），卖方怕它（跌起来亏得越来越快）。<br><b>关键</b>：平值附近 gamma 最大，越虚值/实值越小。这就是 0DTE 最刺激的原因：到期日当天，ATM 的 gamma 爆表，SPX 动一点点，delta 就翻脸。</p>
+</div>
+
+<div class="card">
+  <p class="sec">Theta · 时间税</p>
+  <p class="body">每天流逝，期权贬值多少。买方为负（每天扣钱），卖方为正（每天收钱）。越临近到期，绝对值越大——最后一周的时间价值流失是最快的。<br><b>你的每天睁眼收入</b>：short put、covered call、bear call spread，本质上都是在收 theta。</p>
+</div>
+
+<div class="card">
+  <p class="sec">Vega · 情绪税</p>
+  <p class="body">波动率（IV）涨 1%，期权涨多少。买方为正（爱波动），卖方为负（怕波动）。期限越长 vega 越大。<br>财报前 IV 膨胀→买方开心；财报后 IV 落地→买方哭。第 1 课的 <b>IV crush 就是 vega 的锅</b>。</p>
+</div>
+
+<div class="card">
+  <p class="sec">Rho · 小透明</p>
+  <p class="body">对利率的敏感度。短期限基本忽略，只有 LEAPS 这种长期限的才需要看一眼。知道有它就行。</p>
+</div>
+
+<div class="card">
+  <p class="sec">买方 vs 卖方 · 一张表记住</p>
+  <table style="width:100%;font-size:13.5px;border-collapse:collapse">
+    <tr style="color:#8b93a7;font-size:12px"><td style="padding:6px"></td><td style="padding:6px">买方 Long</td><td style="padding:6px">卖方 Short</td></tr>
+    <tr style="border-top:1px solid #1e2740"><td style="padding:6px">Delta</td><td style="padding:6px">顺方向</td><td style="padding:6px">反方向 / 对冲</td></tr>
+    <tr style="border-top:1px solid #1e2740"><td style="padding:6px">Gamma</td><td style="padding:6px;color:#22c55e">+ 爱</td><td style="padding:6px;color:#ef4444">− 怕</td></tr>
+    <tr style="border-top:1px solid #1e2740"><td style="padding:6px">Theta</td><td style="padding:6px;color:#ef4444">− 每天扣</td><td style="padding:6px;color:#22c55e">+ 每天收</td></tr>
+    <tr style="border-top:1px solid #1e2740"><td style="padding:6px">Vega</td><td style="padding:6px;color:#22c55e">+ 爱波动</td><td style="padding:6px;color:#ef4444">− 怕波动</td></tr>
+  </table>
+  <p class="muted" style="margin-top:8px">一句话：买方花钱买的是 gamma 和 vega，卖方赚钱赚的是 theta，赌的是 gamma 不爆发。</p>
+</div>
+
+<div class="card">
+  <p class="sec">交互 · Delta 随实值程度变化</p>
+  <p class="muted">Call，K=100，30 天到期，IV 30%。拖动股价，看 delta 从 0 爬到 1——注意平值附近曲线最陡（gamma 最大处）。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="70" max="130" value="100" step="0.5" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">落到你的实盘</p>
+  <ul class="ul">
+    <li><b>Delta 当概率尺</b>：卖 put 筛子 delta ≤ 0.25，本质是"只卖 75% 概率站岗的仓位"</li>
+    <li><b>0DTE iron fly 的命门是 gamma</b>：到期日 ATM gamma 极大，SPX 一动 delta 就翻脸——所以你的止损是"触及 B/E ±2 全平"，不给 gamma 发作的时间</li>
+    <li><b>你的收入结构</b>：short theta（每天收租）+ short vega（卖波动）；承担的风险：short gamma（大涨大跌时亏得加速）</li>
+    <li><b>LEAPS（AAPL 250C/280C）</b>：期限长 vega 大，IV 起伏对它们影响明显，买的时候别在 IV 高点接</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 卖出 put（short put）的 theta 是正还是负？对你意味着什么？</summary><p><span class="ans">正。</span>每天收时间价值——这就是你的"收租"。代价是 gamma 和 vega 为负，大跌和恐慌时亏得快。</p></details>
+  <details><summary>Q2 · 为什么 0DTE 期权的 gamma 特别大？</summary><p><span class="ans">越临近到期，平值附近的 delta 翻转越剧烈。</span>同样 1 元的股价移动，到期日当天能让 delta 从 0.2 跳到 0.8，gamma 自然爆表。</p></details>
+</div>
+
+<script>
+(function(){
+var K=100, T=30/365, SIG=0.30, R=0.05;
+function erf(x){var s=x<0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);var y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+function N(x){return 0.5*(1+erf(x/Math.SQRT2));}
+function npdf(x){return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);}
+function d1(S){return (Math.log(S/K)+(R+0.5*SIG*SIG)*T)/(SIG*Math.sqrt(T));}
+function delta(S){return N(d1(S));}
+function gamma(S){return npdf(d1(S))/(S*SIG*Math.sqrt(T));}
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=70,xMax=130,yMin=0,yMax=1;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(v){return padT+(yMax-v)/(yMax-yMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+var s;
+var d='M'+X(xMin)+','+Y(delta(xMin));for(s=xMin+0.5;s<=xMax;s+=0.5){d+=' L'+X(s)+','+Y(delta(s));}
+el('path',{d:d,fill:'none',stroke:'#7dd3fc','stroke-width':2.5});
+el('line',{x1:X(K),y1:padT,x2:X(K),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(K),H-10,'K=100（平值）');
+[0,0.5,1].forEach(function(v){el('line',{x1:padL,y1:Y(v),x2:padL+6,y2:Y(v),stroke:'#8b93a7','stroke-width':1});txt(30,Y(v)+3,v.toFixed(1));});
+txt(X(70),H-10,'70');txt(X(130),H-10,'130');
+var dot=el('circle',{r:6,fill:'#7dd3fc',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),dl=delta(S),gm=gamma(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(dl));
+read.textContent='股价 $'+S.toFixed(1)+'  →  Delta '+dl.toFixed(2)+' · Gamma '+gm.toFixed(3);
+read.style.color='#7dd3fc';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
