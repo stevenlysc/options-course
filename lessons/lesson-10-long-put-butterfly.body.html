@@ -1,0 +1,116 @@
+<div class="hero">
+  <p class="kicker">第 10 课 · Intermediate — NEUTRAL</p>
+  <h1>Long Put Butterfly <span class="cn">买入看跌蝴蝶</span></h1>
+  <p class="tagline">便宜的方向彩票——赌到期钉在中间。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买入 95P + 105P</b><span>翅膀<br>付钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>卖出 2×100P</b><span>身体<br>收钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净付 $2</b><span>S=100 赚满 $3<br>两头亏光</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：买入 95P/105P，卖出 2×100P，净付 $2。身体是个"尖顶帐篷"。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="85" max="115" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$3（S=100）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">97 / 103</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$2（净付 debit）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Theta +</span><span>钉在中间时，时间是朋友——身体比翅膀衰减快</span></div>
+  <div class="greek"><span class="badge neg">Gamma −（中间最高）</span><span>偏离中心时亏损加速，帐篷顶最尖的地方最危险</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>波动率扩张时贬值——它要的是"不动"</span></div>
+  <div class="greek"><span class="badge pos">Delta ≈ 0</span><span>开仓时方向中性</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>赌到期 pin 在某个价位：比如大额期权到期、指数结算日的 pin 行情</li>
+    <li>比单腿 long put 便宜的狙击：$2 买一张"钉住就赚 1.5 倍"的彩票</li>
+    <li>低波动环境：IV 低时蝴蝶便宜，适合提前布局</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 偏离中间</p>
+  <p class="body">Short gamma 的帐篷顶：股价一偏离 100，亏损加速。更常见的是<b>买入太贵</b>——debit 一高，赔率就被压缩，BE 区间缩到几乎不存在。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>越临近到期越刺激</b>：gamma 向中心集中，帐篷顶越来越尖——但别真等到最后一天</li>
+    <li><b>选流动性好的 strike</b>：蝴蝶 3 条腿，滑点吃三遍，流动性差直接亏掉赔率</li>
+    <li><b>别拿最后一天赌 pin</b>：pin 行情是小概率事件，用小仓位玩，别重仓</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Long put butterfly 的最大盈利是多少？</summary><p><span class="ans">$3 @ S=100。</span>宽度（5）减去净付（$2）——到期正好钉在身体上。</p></details>
+  <details><summary>Q2 · 它和 short put butterfly（第 20 课）是什么关系？</summary><p><span class="ans">镜像。</span>Long 赌钉住（short vol，要的就是不动），short 赌走开（long vol，要大动）。一个怕偏离，一个怕钉住。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=85,xMax=115,plMin=-3,plMax=4;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return M(0,95-s)-2*M(0,100-s)+M(0,105-s)-2;};
+var s, be1=97, be2=103;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'中心 100');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'97','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'103','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(85),H-10,'85');txt(X(115),H-10,'115');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

@@ -1,0 +1,129 @@
+<div class="hero">
+  <p class="kicker">第 12 课 · Intermediate — CALENDAR SPREADS</p>
+  <h1>Calendar Call Spread <span class="cn">看涨日历价差</span></h1>
+  <p class="tagline">卖近买远——赌它不动，还赌波动率上升。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 7 天 100C</b><span>近月<br>收钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>买入 37 天 100C</b><span>远月<br>付钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净付约 $2.35</b><span>赌近月到期时<br>股价还在 100 附近</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">近月到期时的 payoff：远月 call 还剩 30 天价值，近月变成内在价值。拖动滑杆看。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">≈$1.28（S≈100）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">约 97 / 103</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">debit（约 $2.35）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Theta +（主力）</span><span>近月衰减比远月快，时间差就是利润</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>long vol——波动率上升，远月比近月涨得多</span></div>
+  <div class="greek"><span class="badge pos">Delta ≈ 0（会变号）</span><span>开仓中性，股价一动 delta 就偏向移动方向</span></div>
+  <div class="greek"><span class="badge neg">Gamma 小</span><span>同 strike，gamma 基本对冲掉</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>预期横盘 + IV 上升：比如财报前，近月 IV 被推高</li>
+    <li>卖近月高 IV、买远月：赚波动率期限结构的钱</li>
+    <li>不想赌方向，只想赌"不动 + 波动起来"</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 大涨大跌</p>
+  <p class="body">股价大动时，short 的近月腿亏损速度超过 long 远月腿的增值——组合滑向一个亏损的 diagonal。<b>日历是"不动"策略，大动就是它的反面</b>。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>近月选 IV 相对高的</b>：卖的那条腿越贵，debit 越低、赔率越好</li>
+    <li><b>近月到期前平仓或 roll</b>：别真让近月被指派，提前处理</li>
+    <li><b>别做太虚值的 strike</b>：虚值日历的 gamma 风险大，稍微一动就穿</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 日历价差的钱从哪赚？</summary><p><span class="ans">近月 theta 衰减快于远月 + vega。</span>时间差是主要收入，波动率上升是 bonus。</p></details>
+  <details><summary>Q2 · 大涨时会发生什么？</summary><p><span class="ans">Short call 被打穿，组合变成亏损的 diagonal。</span>近月腿亏得比远月腿赚得多。</p></details>
+</div>
+
+<script>
+(function(){
+function erf(x){var s=x<0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);var y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+function N(x){return 0.5*(1+erf(x/Math.SQRT2));}
+function npdf(x){return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);}
+function bsCall(S,K,T,r,sig){
+  if(T<=0.0001) return Math.max(0,S-K);
+  if(sig<=0.0001) return Math.max(0,S-K*Math.exp(-r*T));
+  var d1=(Math.log(S/K)+(r+0.5*sig*sig)*T)/(sig*Math.sqrt(T));
+  var d2=d1-sig*Math.sqrt(T);
+  return S*N(d1)-K*Math.exp(-r*T)*N(d2);
+}
+function bsPut(S,K,T,r,sig){return bsCall(S,K,T,r,sig)-S+K*Math.exp(-r*T);}
+var R=0.05, SIG=0.30, D=1/365;
+var DEBIT=bsCall(100,100,37*D,R,SIG)-bsCall(100,100,7*D,R,SIG);
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-2.5,plMax=3;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return bsCall(s,100,30*D,R,SIG)-M(0,s-100)-DEBIT;};
+var s, be1=97, be2=103;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'K=100（盈利峰）');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'97','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'103','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='近月到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

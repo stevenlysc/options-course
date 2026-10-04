@@ -1,0 +1,128 @@
+<div class="hero">
+  <p class="kicker">第 14 课 · Intermediate — CALENDAR SPREADS</p>
+  <h1>Diagonal Call Spread <span class="cn">看涨对角价差</span></h1>
+  <p class="tagline">日历的偏多版——PMCC 的穷人版。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 7 天 105C</b><span>近月 OTM<br>收钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>买入 37 天 100C</b><span>远月 ITM<br>付钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净付约 $3.79</b><span>偏多 + 收时间价值<br>不想买正股的 PMCC</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">近月到期时的 payoff：和日历不一样，峰值偏向 short strike 一侧，带方向。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="85" max="125" value="105" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">≈$3.06（S≈105）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">≈$100</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">debit（约 $3.79）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +</span><span>偏多——long 腿 ITM，delta 实在</span></div>
+  <div class="greek"><span class="badge pos">Theta +（温和）</span><span>近月 short 腿衰减更快，收时间差</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>long vol，波动率上升利好</span></div>
+  <div class="greek"><span class="badge neg">Gamma 小</span><span>期限差对冲了一部分</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>温和看涨 + 收时间价值：涨也行、横盘也行</li>
+    <li>不想买正股的 PMCC：用远月 ITM call 代替 100 股股票</li>
+    <li>对正股没兴趣、只想租个方向敞口的时候</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 两头不靠</p>
+  <p class="body">大跌：long 腿贬值，debit 打水漂；大涨超 105：被 capped，涨再多也与你无关。<b>Diagonal 赚的是"温和"，极端行情两头吃亏</b>。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>Long 选 ITM 远月</b>：delta 高、抗 theta——它是你的"股票替代品"，得结实</li>
+    <li><b>Short 选 OTM 近月</b>：多收时间价值，strike 放在阻力位附近</li>
+    <li><b>Short 腿可以滚动</b>：近月到期前平掉再卖下个月，diagonal 是可以"续租"的</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Diagonal 和 calendar 的区别？</summary><p><span class="ans">Strike 不同，diagonal 带方向。</span>Calendar 同 strike 纯赌不动，diagonal 的 long/short 不在同一 strike，自带方向偏好。</p></details>
+  <details><summary>Q2 · PMCC 是什么？</summary><p><span class="ans">超长期 diagonal：LEAPS long + 近月 short。</span>用深度 ITM 的远月 call 代替正股，上面不停卖 call 收租。</p></details>
+</div>
+
+<script>
+(function(){
+function erf(x){var s=x<0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);var y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+function N(x){return 0.5*(1+erf(x/Math.SQRT2));}
+function npdf(x){return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);}
+function bsCall(S,K,T,r,sig){
+  if(T<=0.0001) return Math.max(0,S-K);
+  if(sig<=0.0001) return Math.max(0,S-K*Math.exp(-r*T));
+  var d1=(Math.log(S/K)+(r+0.5*sig*sig)*T)/(sig*Math.sqrt(T));
+  var d2=d1-sig*Math.sqrt(T);
+  return S*N(d1)-K*Math.exp(-r*T)*N(d2);
+}
+function bsPut(S,K,T,r,sig){return bsCall(S,K,T,r,sig)-S+K*Math.exp(-r*T);}
+var R=0.05, SIG=0.30, D=1/365;
+var DEBIT=bsCall(100,100,37*D,R,SIG)-bsCall(100,105,7*D,R,SIG);
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=85,xMax=125,plMin=-4,plMax=4;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return bsCall(s,100,30*D,R,SIG)-M(0,s-105)-DEBIT;};
+var s, be=100;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(239,68,68,.12)');
+shade(be,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'长腿 100');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-24,'短腿 105');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-10,'B/E≈100','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(85),H-10,'85');txt(X(125),H-10,'125');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='近月到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
