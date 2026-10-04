@@ -1,0 +1,109 @@
+<div class="hero">
+  <p class="kicker">第 4 课 · Novice — INCOME</p>
+  <h1>Cash-Secured Put <span class="cn">现金担保卖出看跌</span></h1>
+  <p class="tagline">想以更低的价格买入心仪的股票？先收一笔"等你跌"的定金。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 两步</p>
+  <div class="steps">
+    <div class="step"><b>卖出 1 张 Put</b><span>Strike K<br>收权利金 P</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>预留现金</b><span>K × 100 美元<br>随时准备按 K 接股</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>到期</b><span>没跌破 K：白赚权利金<br>跌破 K：按 K 买入股票</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 95P 收 $4。拖动看不同到期股价下的单股盈亏。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="60" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">权利金</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">K − P</div></div>
+    <div class="kpi"><div class="k">接股实际成本</div><div class="v">K − P</div></div>
+  </div>
+  <p class="muted" style="margin-top:8px">被指派不亏：你本来就想买这只股票，现在实际买入价是 K−P，比 K 还便宜了 P。这就是"等你跌"的逻辑。</p>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +</span><span>和持有股票同方向：涨赚钱、跌亏钱，只是幅度小</span></div>
+  <div class="greek"><span class="badge pos">Theta +</span><span>时间是你的朋友，每天收时间价值</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>波动率飙升时 put 变贵＝你的空头亏钱，恐慌市最难受</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>越跌亏得越快——接飞刀时 gamma 站在对面</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>中性偏多，想收租；同时不排斥在 K 价位接股</li>
+    <li>"折价买入"心态：本来就想买，现在多收一笔定金</li>
+    <li>滚动管理：跌破 K 不想接股 → roll 到更远月更低 strike（你的日常操作）</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 接飞刀</p>
+  <p class="body">"便宜没好货"有时是对的：基本面恶化导致的暴跌，K−P 的"折价"根本不够看，股票可能一路跌穿。卖 put 之前先问：<b>这只股票跌 30%，我还愿意持有吗？</b>不愿意，就别卖它的 put。</p>
+</div>
+
+<div class="card">
+  <p class="sec">落到实盘</p>
+  <ul class="ul">
+    <li>你的卖方主力就是它：<b>APP 11/13 285P ×-1</b>（链 basis $14.52，50% 线 $7.26）</li>
+    <li>你的纪律：naked short put 买回价（ask）跌到链 basis 50% 止盈；进入 1.3T 预警区提前提醒、当天只报一次</li>
+    <li>价内但 DTE&gt;21：已 roll 过的继续观察，到 ~21 DTE 仍价内再 roll；roll 不动（如 MRVL 310P）就让时间价值消耗</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 卖出 95P 收 $4，到期股价 $90，你的实际持仓成本是多少？</summary><p><span class="ans">$91。</span>被指派按 $95 买入，但收了 $4 权利金，实际成本 = 95 − 4 = $91。</p></details>
+  <details><summary>Q2 · 为什么叫"现金担保"？不预留现金会怎样？</summary><p><span class="ans">保证跌破 K 时有钱按 K 接股。</span>不预留就是 naked put——用保证金硬扛，暴跌时可能被券商强制平仓在最低点。</p></details>
+</div>
+
+<script>
+(function(){
+var K=95, PREM=4;
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=60,xMax=120,plMin=-36,plMax=10;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+var pl=function(s){return PREM - Math.max(0,K-s);};
+var be=K-PREM, s;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+var lossPts='';for(s=xMin;s<=be;s+=2){lossPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:padL+','+Y(0)+' '+lossPts+X(be)+','+Y(0),fill:'rgba(239,68,68,.12)'});
+var profPts='';for(s=be;s<=xMax;s+=2){profPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:X(be)+','+Y(0)+' '+profPts+X(xMax)+','+Y(0),fill:'rgba(34,197,94,.12)'});
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(K),y1:padT,x2:X(K),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(K),H-10,'K=95');
+txt(X(be),H-24,'B/E=91','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(60),H-10,'60');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2)+(S<K?'（被指派接股，实际成本 $'+(K-PREM)+'）':'（权利金落袋）');
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

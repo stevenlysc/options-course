@@ -1,0 +1,109 @@
+<div class="hero">
+  <p class="kicker">第 3 课 · Novice — INCOME</p>
+  <h1>Covered Call <span class="cn">备兑看涨期权</span></h1>
+  <p class="tagline">手里有股票，愿意在某个价位卖出？那就先把「上涨的权利」卖个价钱。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 两条腿</p>
+  <div class="steps">
+    <div class="step"><b>持有正股</b><span>100 股（1 张 call 对应）<br>成本 C</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 1 张 Call</b><span>通常虚值 Strike K<br>收权利金 P</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>到期</b><span>涨超 K：股票被 call 走<br>没涨超：白赚权利金</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：股票成本 $100，卖出 105C 收 $3。拖动看不同到期股价下的组合盈亏。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="130" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">(K−C)+P</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">C − P</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">C − P（跌到 0）</div></div>
+  </div>
+  <p class="muted" style="margin-top:8px">上涨空间被 K 封顶——超过 K 的每一块钱涨幅都归买方。这就是 covered call 的代价：拿上行换权利金。</p>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +（变小）</span><span>正股 +1，被 short call 的负 delta 对冲掉一部分</span></div>
+  <div class="greek"><span class="badge pos">Theta +</span><span>时间是你的朋友，每天收时间价值</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>波动率上升时 short call 贬值，对你不利（但正股端通常受益对冲）</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>大涨时组合涨得越来越慢——上行被 K 钉住了</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>中性偏多，且真心愿意在 K 价位卖出股票（"这个价卖了我也认"）</li>
+    <li>给长期持仓"收租"：股价横盘时权利金就是额外收益</li>
+    <li>摊薄成本：每收一笔权利金，持仓成本降一截</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 暴涨踏空</p>
+  <p class="body">股票一飞冲天，你的盈利却被 K 钉死——看着别人吃大肉，自己只喝到权利金这口汤。Covered call 的本质是<b>用上行换确定性</b>，卖之前先问自己：这个 K，我真愿意卖吗？</p>
+</div>
+
+<div class="card">
+  <p class="sec">落到实盘</p>
+  <ul class="ul">
+    <li><b>META covered call 链</b>：208 股 @ $663.29，现腿 2027-02-19 700C；链净收 $15.96/股，50% 线 $7.98——慢慢 up-and-out roll，涨到 800 附近再往上往外</li>
+    <li><b>RAM 两条独立 covered call</b>：10/16 17C / 18C，各按自己的 R 线（$0.27 / $0.18）管理，不配对</li>
+    <li><b>LITX wheel</b>：11/20 45C 被 call 走 = 一轮完整 wheel，然后回到小仓位 spread 观察</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Covered call 的最大盈利是多少？</summary><p><span class="ans">(K − 股票成本) + 权利金。</span>涨超 K 就被 call 走，多一分涨幅都与你无关。</p></details>
+  <details><summary>Q2 · 股票暴跌 30%，covered call 的权利金能救你吗？</summary><p><span class="ans">基本不能。</span>权利金相对跌幅是杯水车薪——covered call 防的是横盘和阴跌，不是股灾。</p></details>
+</div>
+
+<script>
+(function(){
+var C=100, K=105, PREM=3;
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=130,plMin=-20,plMax=14;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+var pl=function(s){return (s-C) + (PREM - Math.max(0,s-K));};
+var be=C-PREM, s;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+var lossPts='';for(s=xMin;s<=be;s+=2){lossPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:padL+','+Y(0)+' '+lossPts+X(be)+','+Y(0),fill:'rgba(239,68,68,.12)'});
+var profPts='';for(s=be;s<=xMax;s+=2){profPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:X(be)+','+Y(0)+' '+profPts+X(xMax)+','+Y(0),fill:'rgba(34,197,94,.12)'});
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(K),y1:padT,x2:X(K),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(K),H-10,'K=105');
+txt(X(be),H-24,'B/E=97','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(130),H-10,'130');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2)+(S>K?'（股票被 call 走）':'');
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

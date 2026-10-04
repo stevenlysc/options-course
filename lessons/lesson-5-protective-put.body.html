@@ -1,0 +1,108 @@
+<div class="hero">
+  <p class="kicker">第 5 课 · Novice — OTHER</p>
+  <h1>Protective Put <span class="cn">保护性看跌期权</span></h1>
+  <p class="tagline">看好长期、怕短期黑天鹅？给你的股票买一份保险。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 两条腿</p>
+  <div class="steps">
+    <div class="step"><b>持有正股</b><span>100 股<br>成本 C</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 1 张 Put</b><span>Strike K（≤ 现价）<br>付权利金 P</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>效果</b><span>上涨照赚（扣保费）<br>下跌锁死最大亏损</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：股票成本 $100，买入 95P 付 $4。拖动看不同到期股价下的组合盈亏。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="60" max="140" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">(C−K)+P</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">C + P</div></div>
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">无限（扣保费）</div></div>
+  </div>
+  <p class="muted" style="margin-top:8px">和 covered call 正好反过来：covered call 卖掉上行换权利金，protective put 花权利金保住下行。保险都有免赔额——K 离现价越远，保费越便宜，免赔额（C−K）越高。</p>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +（变小）</span><span>正股 +1，被 long put 的负 delta 部分对冲——跌时亏得慢</span></div>
+  <div class="greek"><span class="badge neg">Theta −</span><span>保费每天损耗，保险是有持有成本的</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>恐慌时 put 升值最快——保险在最需要的时候最值钱</span></div>
+  <div class="greek"><span class="badge pos">Gamma +</span><span>暴跌时 put 加速升值，对冲越来越给力</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>长期看好、短期怕黑天鹅：财报前、大选前、想拿住又怕崩</li>
+    <li>锁定利润：股票大涨后，用 put 把利润"落袋为安"一部分</li>
+    <li>不想卖股（税务 / 信念），但想睡安稳觉</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 保费烧光</p>
+  <p class="body">牛市里年年买保险、年年用不上，保费成了纯损耗——长期持有 protective put 相当于每年给券商交"安心税"。保险是<b>按需购买</b>的，不是标配。</p>
+</div>
+
+<div class="card">
+  <p class="sec">落到实盘 · 以及第 24 课预告</p>
+  <ul class="ul">
+    <li>你很少用它：AAOX / RAM 持有等回本，宁愿扛波动也不买保险——这是你的风格（持有观察，不轻易砍仓）</li>
+    <li>如果嫌保费贵：<b>Collar（第 24 课）= protective put + covered call</b>——卖 call 收的权利金去付 put 的保费，零成本（甚至负成本）买保险，代价是上行也被封顶</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 股票成本 $100，买入 95P 付 $4，最大亏损是多少？</summary><p><span class="ans">$9。</span>(100−95) + 4 = $9——跌破 95 之后，put 的盈利 1:1 对冲股票的亏损，亏损锁死。</p></details>
+  <details><summary>Q2 · Protective put 和第 3 课 covered call 是什么关系？</summary><p><span class="ans">镜像。</span>Covered call = 卖掉上行换权利金；protective put = 花权利金保住下行。一个收租，一个买保险。</p></details>
+</div>
+
+<script>
+(function(){
+var C=100, K=95, PREM=4;
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=60,xMax=140,plMin=-14,plMax=34;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+var pl=function(s){return (s-C) + (Math.max(0,K-s) - PREM);};
+var be=C+PREM, s;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+var lossPts='';for(s=xMin;s<=be;s+=2){lossPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:padL+','+Y(0)+' '+lossPts+X(be)+','+Y(0),fill:'rgba(239,68,68,.12)'});
+var profPts='';for(s=be;s<=xMax;s+=2){profPts+=X(s)+','+Y(pl(s))+' ';}
+el('polygon',{points:X(be)+','+Y(0)+' '+profPts+X(xMax)+','+Y(0),fill:'rgba(34,197,94,.12)'});
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(K),y1:padT,x2:X(K),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(K),H-10,'K=95');
+txt(X(be),H-24,'B/E=104','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(60),H-10,'60');txt(X(140),H-10,'140');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2)+(S<K?'（保险赔付，亏损锁死）':'');
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
