@@ -1,0 +1,114 @@
+<div class="hero">
+  <p class="kicker">第 26 课 · Advanced — DIRECTIONAL</p>
+  <h1>Short Call <span class="cn">裸卖看涨</span></h1>
+  <p class="tagline">每期 $3 的零花钱，换你对上涨无限兜底。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 105C</b><span>收 $3<br>1 张</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>S ≤ 105</b><span>call 归零<br>$3 全留下</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>S &gt; 105</b><span>涨多少亏多少<br>没有上限</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 105C，收 credit $3。到期价在 105 下方，$3 白拿；涨破 105，亏损一路向下、没有底。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="70" max="130" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$3（≤105 全收）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">108</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">无限（S→∞）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge neg">Delta −</span><span>涨一点亏一点，像空头持股</span></div>
+  <div class="greek"><span class="badge pos">Theta +</span><span>每天收时间价值</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>IV 一涨 call 变贵，直接吃亏损</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>涨破 105 后亏损加速，越涨越快</span></div>
+  <div class="greek"><span class="badge neg">⚠️ 无限风险</span><span>股票能涨到多高，你就能亏多少——没有上限</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>极度看跌：坚定认为涨不过 105，收租</li>
+    <li>对冲多头组合里的上行：手里有别的看多仓位时，卖 call 压一压 delta</li>
+    <li>说实话：纯裸卖 call 的"适用场景"很少，它更多是用来理解风险的反面教材</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 逼空</p>
+  <p class="body">卖 105C 收 $3，被收购、财报超预期、轧空——股票一口气涨到 200，你亏的是 $92/股，而且它还能继续涨。<b style="color:#ef4444">⚠️ 无限风险：这是全课程风险最高的动作之一，亏损没有上限。</b>想卖 call，先确认手里有股票对冲——那叫 covered call，是另一回事。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>裸卖 call 是全课程风险最高的动作，没有之一</b>：真想卖 call，先确认有正股对冲（covered call）或买入更高 strike 的 call 做成 spread</li>
+    <li><b>进场前先写好跑路条件</b>：比如亏损达到权利金的一定倍数就认赔离场，没有"扛一扛等回来"这回事</li>
+    <li><b>逼空行情里别卖 call</b>：short squeeze 专治裸卖 call，涨起来不讲道理</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Short call 的最大亏损是多少？</summary><p><span class="ans">没有上限。</span>卖 105C 收 $3，S 涨到多少就亏多少——股票没有涨幅天花板，你的亏损也没有。</p></details>
+  <details><summary>Q2 · 什么情况下卖 call 相对安全？</summary><p><span class="ans">有东西对冲的时候。</span>手里有正股就是 covered call，买入更高 strike 的 call 就是 bear call spread——纯裸卖 call 本身没有"安全"的版本。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=70,xMax=130,plMin=-25,plMax=5;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 3-M(0,s-105);};
+var s, be=108;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(34,197,94,.12)');
+shade(be,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105C');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-24,'B/E 108','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(70),H-10,'70');txt(X(130),H-10,'130');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期标的价格 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

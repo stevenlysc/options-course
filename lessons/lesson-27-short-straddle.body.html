@@ -1,0 +1,117 @@
+<div class="hero">
+  <p class="kicker">第 27 课 · Advanced — VOLATILITY</p>
+  <h1>Short Straddle <span class="cn">卖出跨式</span></h1>
+  <p class="tagline">两边都收租——赌的是"哪儿也不去"。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 100C + 卖出 100P</b><span>同 strike 同到期<br>共收 $8</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>S = 100</b><span>两条腿都归零<br>$8 赚满</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>大涨或大跌</b><span>B/E 92 / 108<br>两边都无限亏</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 100C + 100P，共收 credit $8。只有到期价钉在 100 附近才赚满，往两边走一边亏得比另一边赚得多。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="70" max="130" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$8（S=100 钉死）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">92 / 108</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">无限（两边）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta ~0</span><span>call 和 put 的 delta 互相抵消，开局方向中性</span></div>
+  <div class="greek"><span class="badge pos">Theta +（双份）</span><span>两条腿一起收时间价值，收租速度翻倍</span></div>
+  <div class="greek"><span class="badge neg">Vega −（大）</span><span>卖的就是波动率，IV 一涨两条腿一起变贵</span></div>
+  <div class="greek"><span class="badge neg">Gamma −（大）</span><span>价格一动，delta 迅速倒向亏损那边</span></div>
+  <div class="greek"><span class="badge neg">⚠️ 两边无限风险</span><span>大涨亏 call 边，大跌亏 put 边，都没有上限</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>预期横盘：财报后、消息真空期，赌波动率熄火</li>
+    <li>IV 虚高时卖波动率：市场恐慌但你觉得是虚惊一场</li>
+    <li>pin 预期：指数在整数关口附近磨蹭，到期大概率钉住</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 来一根大阳线 / 大阴线</p>
+  <p class="body">收 $8 的租，赌的是"不动"。一次财报超预期、一次收购消息，±15% 的行情直接击穿两个 B/E——<b style="color:#ef4444">⚠️ 两边都是无限风险</b>，一边亏起来，另一边归零的那点安慰杯水车薪。财报前卖 straddle 不是收租，是赌博。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>IV 高位卖，IV 低位别碰</b>：卖的是波动率，低 IV 卖出等于贱卖自己的风险</li>
+    <li><b>盈利达到 credit 一定比例就收</b>：别贪到期 pin，越接近到期 gamma 越吓人</li>
+    <li><b>财报前先看 expected move</b>：市场预期的波动大于你收的 credit 时，这单没有优势</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Short straddle 什么时候赚满？</summary><p><span class="ans">到期价正好停在 strike（100）。</span>两条腿同时归零，$8 全留下——偏一点就开始少赚，偏多就开始亏。</p></details>
+  <details><summary>Q2 · IV crush 对 short straddle 是好是坏？</summary><p><span class="ans">好。</span>卖的就是波动率，IV 一跌两条腿一起贬值，买回来更便宜——这就是"卖波动率"的本意。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=70,xMax=130,plMin=-25,plMax=10;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 8-M(0,s-100)-M(0,100-s);};
+var s, be1=92, be2=108;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100C+100P');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 92','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 108','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(70),H-10,'70');txt(X(130),H-10,'130');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期标的价格 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

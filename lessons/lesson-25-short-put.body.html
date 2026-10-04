@@ -1,0 +1,114 @@
+<div class="hero">
+  <p class="kicker">第 25 课 · Advanced — DIRECTIONAL</p>
+  <h1>Short Put <span class="cn">裸卖看跌</span></h1>
+  <p class="tagline">收租的另一面——跌破就得接盘。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 95P</b><span>收 $3<br>1 张</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>S ≥ 95</b><span>put 归零<br>$3 全留下</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>S &lt; 95</b><span>跌破就接盘<br>95 买入股票</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 95P，收 credit $3。到期价在 95 上方，$3 白拿；跌破 95，开始按 95 接盘。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$3（≥95 全收）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">92</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$92（S→0：95−3）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +</span><span>涨一点赚一点，跌一点亏一点，像半仓持股</span></div>
+  <div class="greek"><span class="badge pos">Theta +</span><span>每天收时间价值，是"收租"感觉的来源</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>IV 一涨 put 变贵，直接吃亏损</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>跌破 95 后亏损加速，越跌越快</span></div>
+  <div class="greek"><span class="badge neg">⚠️ 裸敞口</span><span>没有对冲，标的归零亏满 $92/股</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>想买但嫌贵：想在 92 一带接某只股票，卖 95P，接到就是折价买、接不到白拿 $3</li>
+    <li>温和看涨 / 看不跌：觉得跌不破 95，每期收租</li>
+    <li>替代 limit buy 单：在支撑位上方卖 put，比挂买单多一笔权利金收入</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 黑天鹅接盘</p>
+  <p class="body">Short put 赚的是小钱、亏的是大钱：平时一期 $3 慢慢收，一次黑天鹅腰斩，直接亏掉几十期的租金。<b style="color:#ef4444">⚠️ 这是裸头寸，下行没有对冲，标的归零亏满 $92/股。</b>永远只卖"真跌一半也睡得着"的仓位规模。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>只卖你愿意接盘的股票</b>：short put 的终点是持股，接盘价 = strike − credit，得是真心想要的价位</li>
+    <li><b>财报前别裸卖</b>：gap down 直接击穿所有希腊字母，接盘价瞬间变笑话</li>
+    <li><b>留出现金或保证金</b>：被指派要按 strike 全额买股，钱不够会被强制平仓在最低点</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Short put 跌破 strike 会发生什么？</summary><p><span class="ans">被指派，按 strike 买入股票。</span>卖 95P 收 $3，实际接盘成本是 95 − 3 = $92/股——这就是"跌破就得接盘"。</p></details>
+  <details><summary>Q2 · 为什么 short put 常被叫做"收租"？</summary><p><span class="ans">大部分时间到期价 ≥ strike，权利金白拿。</span>代价是小概率一次大跌，吃掉很多期的租金——租客（市场）偶尔会把房子烧了。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-15,plMax=5;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 3-M(0,95-s);};
+var s, be=92;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(239,68,68,.12)');
+shade(be,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95P');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-24,'B/E 92','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期标的价格 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

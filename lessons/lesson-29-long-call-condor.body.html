@@ -1,0 +1,122 @@
+<div class="hero">
+  <p class="kicker">第 29 课 · Advanced — NEUTRAL</p>
+  <h1>Long Call Condor <span class="cn">买入看涨秃鹰</span></h1>
+  <p class="tagline">把蝴蝶的帐篷顶拍平——多一段容错，少一点赔率。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买 95C + 卖 100C</b><span>左边一个 bull spread<br>宽 5</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖 105C + 买 110C</b><span>右边一个 bear spread<br>宽 5</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净付 $2</b><span>100~105 赚满 $3<br>其他亏 $2</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：买 95C、卖 100C、卖 105C、买 110C，净付 debit $2。中间顶是平的——100 到 105 之间都赚满 $3。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$3（100~105 赚满）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">97 / 108</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$2（debit 全亏）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta ~0（中心）</span><span>价格在中间区间时方向中性</span></div>
+  <div class="greek"><span class="badge pos">Theta +（中心附近）</span><span>待在赚钱区间里，时间是朋友</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>两条 short leg 的 gamma 占上风，价格跑出区间就变脸</span></div>
+  <div class="greek"><span class="badge pos">Vega 小</span><span>四条腿互相抵得差不多，对 IV 不敏感</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>看横盘但想限定亏损：和 short strangle 同方向，但最大只亏 $2</li>
+    <li>butterfly 太"尖"时：觉得价格会待在某个区间、但钉不准某一个点</li>
+    <li>低成本彩票：debit 小，赌一个区间，亏完不心疼</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 斜坡上磨死 + 买贵</p>
+  <p class="body">两个死法：<b>价格停在 95~97 或 108~110 的斜坡上</b>——没赚满也没亏满，不上不下最磨人；<b>debit 买贵了</b>——宽 5 的秃鹰，debit 一贵，$3 的顶直接变薄甚至变负。秃鹰是"便宜才值得"的策略。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>秃鹰就是把蝴蝶的帐篷顶拍平</b>：和 long butterfly 同家族，多一段容错区间，代价是赔率更低</li>
+    <li><b>debit 别超过宽度的一定比例</b>：顶只有 5 宽，买贵了直接没肉，不如不做</li>
+    <li><b>它对 IV 不敏感</b>：别指望靠波动率赚钱，赚的是"价格待在区间里"</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Condor 和 butterfly 的区别？</summary><p><span class="ans">蝴蝶中间是单 strike 的尖顶，秃鹰把两条 short leg 拉开、顶变平。</span>多一段赚满区间（100~105），代价是最大盈利更小——容错换赔率。</p></details>
+  <details><summary>Q2 · Long call condor 最大亏多少？</summary><p><span class="ans">$2，就是付出去的 debit。</span>到期价在 95 下方或 110 上方，四条腿要么全归零、要么互相抵消，亏满 $2 封顶——风险是锁死的。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-3,plMax=4;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return M(0,s-95)-M(0,s-100)-M(0,s-105)+M(0,s-110)-2;};
+var s, be1=97, be2=108;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95C');
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100C');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105C');
+el('line',{x1:X(110),y1:padT,x2:X(110),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(110),H-10,'110C');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 97','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 108','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期标的价格 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

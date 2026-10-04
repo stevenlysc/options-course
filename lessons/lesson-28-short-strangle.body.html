@@ -1,0 +1,119 @@
+<div class="hero">
+  <p class="kicker">第 28 课 · Advanced — VOLATILITY</p>
+  <h1>Short Strangle <span class="cn">卖出宽跨式</span></h1>
+  <p class="tagline">比跨式多一条活路，但两边依然没有顶。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 95P + 卖出 105C</b><span>价外两条腿<br>共收 $5</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>95 ~ 105 之间</b><span>"躺赢区"<br>$5 赚满</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>跌破 90 / 涨破 110</b><span>B/E 被击穿<br>两边都无限亏</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 95P + 105C，共收 credit $5。中间 10 个点的区间都是赚满，代价是收的租比跨式少。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="70" max="130" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$5（95~105 赚满）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">90 / 110</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">无限（两边）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta ~0</span><span>开局方向中性，在"躺赢区"里待着很舒服</span></div>
+  <div class="greek"><span class="badge pos">Theta +</span><span>两条腿一起收时间价值</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>卖波动率，IV 上涨直接亏</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>接近 strike 时亏损加速</span></div>
+  <div class="greek"><span class="badge neg">⚠️ 两边无限风险</span><span>宽跨式只是中间宽了，两头照样没有上限</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>温和横盘：觉得涨跌都有限，给价格留一段活动空间</li>
+    <li>straddle 太贵不敢卖时：宽跨式 credit 少、但容错区间大，适合波动稍大的标的</li>
+    <li>IV 虚高 + 无大事：波动率溢价厚，又没有明确的催化剂</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 温水煮青蛙式单边</p>
+  <p class="body">宽跨式死于"慢慢走出去"：价格不紧不慢地单边漂移，delta 越漂越偏，gamma 在 strike 附近加速，最后 B/E 被击穿。<b style="color:#ef4444">⚠️ 两边都是无限风险</b>，"躺赢区"只是让你死得晚一点，不是死不了。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>宽跨式是 straddle 的温和版，不是安全版</b>：温和的是中间区间，两头的无限风险一分没少</li>
+    <li><b>让"躺赢区"覆盖正常波动</b>：参考 expected move 来选 strikes，别拍脑袋定 95/105</li>
+    <li><b>一边被突破先处理</b>：别等两边同时着火，单边走出去时就得动手调仓或认赔</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Short strangle 和 short straddle 最大的区别？</summary><p><span class="ans">Strangle 卖的是价外两条腿。</span>中间多一段"躺赢区"（95~105 都赚满），代价是收的 credit 更少（$5 vs $8）。</p></details>
+  <details><summary>Q2 · 两边的 B/E 怎么算？</summary><p><span class="ans">Put strike − credit，call strike + credit。</span>95 − 5 = 90，105 + 5 = 110——卖出组合的 B/E 永远是"往外再推一个 credit"。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=70,xMax=130,plMin=-22,plMax=7;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 5-M(0,s-105)-M(0,95-s);};
+var s, be1=90, be2=110;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95P');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105C');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 90','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 110','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(70),H-10,'70');txt(X(130),H-10,'130');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期标的价格 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
