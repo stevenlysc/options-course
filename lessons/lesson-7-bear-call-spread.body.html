@@ -1,0 +1,114 @@
+<div class="hero">
+  <p class="kicker">第 7 课 · Intermediate — CREDIT SPREADS</p>
+  <h1>Bear Call Spread <span class="cn">熊市看涨价差</span></h1>
+  <p class="tagline">想卖 call 收租又怕暴涨？买条保险腿，亏损有限。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 105C</b><span>收权利金<br>short call 腿</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>买入 110C</b><span>付权利金<br>保险腿</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净收 $2</b><span>S≤105 全赚<br>S≥110 亏满 $3</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 105C、买入 110C，净收 $2。拖动滑杆，看不同到期股价下的单股盈亏。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="90" max="120" value="110" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$2</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">107</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$3（宽度−权利金）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge neg">Delta −</span><span>温和看跌，涨起来亏钱</span></div>
+  <div class="greek"><span class="badge pos">Theta +（主力）</span><span>时间是主要收入来源，每天收租</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>波动率飙升时价差贬值</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>暴涨时亏损加速——保险腿只能保到 110</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>温和看跌或横盘：觉得"涨不动了"，收 $2 权利金</li>
+    <li>指数周度梯子的 call 边，一层一层往上搭</li>
+    <li>只想表达"看不涨"，而不是"看大跌"</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 逼空式暴涨</p>
+  <p class="body">Call 边最怕的就是逼空式上涨——穿 110 之后亏损锁死 $3，但很多人会在半路上恐慌平仓，亏得比持有到期还多。记住：<b>spread 的亏损是有限的，别用恐慌把它变成无限的操作失误</b>。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>Short 腿 delta 0.15–0.25</b>：call 边用比 put 边更低的 delta，留出上涨空间</li>
+    <li><b>Credit/width ≥ 15%</b>：5 点宽至少收 $0.75，太薄不值得</li>
+    <li><b>50% 止盈</b>：买回价跌到权利金一半就平</li>
+    <li><b>到期当周买回价 &lt; $0.30 直接平</b>：别为几毛钱赌一次暴涨</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Bear call spread 的盈亏平衡点是多少？</summary><p><span class="ans">107。</span>短腿 105 加上净收权利金 $2——涨超 107 才开始亏钱。</p></details>
+  <details><summary>Q2 · 为什么它适合"看不涨"而非"看大跌"？</summary><p><span class="ans">盈利封顶 $2，大跌也只赚这么多。</span>真看大跌应该用 bear put spread（第 17 课）——跌起来才赚钱。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=90,xMax=120,plMin=-4,plMax=3;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 2-M(0,s-105)+M(0,s-110);};
+var s, be=107;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(34,197,94,.12)');
+shade(be,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'短腿 105');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-24,'B/E 107','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(90),H-10,'90');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

@@ -1,0 +1,114 @@
+<div class="hero">
+  <p class="kicker">第 6 课 · Intermediate — CREDIT SPREADS</p>
+  <h1>Bull Put Spread <span class="cn">牛市看跌价差</span></h1>
+  <p class="tagline">想卖 put 收租又怕暴跌？买条保险腿，亏损有限。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 95P</b><span>收权利金<br>short put 腿</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>买入 90P</b><span>付权利金<br>保险腿</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净收 $2</b><span>S≥95 全赚<br>S≤90 亏满 $3</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 95P、买入 90P，净收 $2。拖动滑杆，看不同到期股价下的单股盈亏。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="110" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$2</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">93</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$3（宽度−权利金）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +（小）</span><span>温和看涨，delta 比 naked put 小一截</span></div>
+  <div class="greek"><span class="badge pos">Theta +（主力）</span><span>时间是主要收入来源，每天收租</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>波动率飙升时价差贬值，恐慌市难受</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>暴跌时亏损加速——保险腿只能保到 90</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>温和看涨、想收租：觉得不会跌破 95，收 $2 权利金</li>
+    <li>给 naked short put 加保险腿：把敞口巨大的亏损变成有限亏损</li>
+    <li>指数周度梯子：put 边一层一层往上搭，定义风险</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 穿 90 还死扛</p>
+  <p class="body">暴跌穿 90，亏损锁死在 $3——这本是 spread 的意义。但有人看到"有限"就躺平不管，任由它亏满。记住：<b>有限亏损不等于不用管理</b>，提前止损永远比亏满强。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>Short 腿 delta ≤ 0.25</b>：用概率尺选 strike，只卖大概率站岗的边</li>
+    <li><b>Credit/width ≥ 15%</b>：权利金相对宽度太薄不值得——5 点宽至少收 $0.75</li>
+    <li><b>50% 止盈</b>：买回价跌到权利金一半就平，落袋为安</li>
+    <li><b>到期当周买回价 &lt; $0.30 直接平</b>：别为最后几毛钱赌一次暴跌</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Bull put spread 的最大亏损是多少？</summary><p><span class="ans">$3。</span>宽度（95−90=5）减去净收权利金（$2）——这就是「定义风险」的含义。</p></details>
+  <details><summary>Q2 · 相对 naked short put，spread 好在哪？</summary><p><span class="ans">少收权利金（买保险腿花了钱），换来亏损有限、晚上睡得着。</span>naked put 暴跌时亏损可以很大，spread 最多亏宽度减权利金。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=110,plMin=-4,plMax=3;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 2-M(0,95-s)+M(0,90-s);};
+var s, be=93;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(239,68,68,.12)');
+shade(be,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'短腿 95');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-24,'B/E 93','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(110),H-10,'110');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

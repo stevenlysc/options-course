@@ -1,0 +1,116 @@
+<div class="hero">
+  <p class="kicker">第 8 课 · Intermediate — NEUTRAL</p>
+  <h1>Iron Butterfly <span class="cn">铁蝴蝶</span></h1>
+  <p class="tagline">赌它不动——straddle 加翅膀，拼成蝴蝶。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 100 Straddle</b><span>100C + 100P<br>收大钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>买入 110C + 90P</b><span>翅膀<br>付小钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净收 $6</b><span>S=100 赚满<br>偏离越多越少</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 100 straddle，买入 110C / 90P 翅膀，净收 $6。注意身体是个"尖顶"。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="85" max="115" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$6（S=100）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">94 / 106</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$4（宽度−权利金）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Theta ++（主力）</span><span>时间是最大收入来源，横盘每天收租</span></div>
+  <div class="greek"><span class="badge neg">Vega −−</span><span>波动率飙升是天敌，IV 一扩就贬值</span></div>
+  <div class="greek"><span class="badge neg">Gamma −−（ATM 最高）</span><span>偏离中心时亏损加速，越临近到期越狠</span></div>
+  <div class="greek"><span class="badge pos">Delta ≈ 0</span><span>开仓时方向中性</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>预期横盘不动：到期钉在中心附近就是满额 $6</li>
+    <li>IV 高位卖波动：权利金贵的时候开仓最划算</li>
+    <li>0DTE iron fly 就是它的日内版：当天到期，theta 一天烧完</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 穿 BE 遇上 short gamma</p>
+  <p class="body">一旦穿过 94 / 106，ATM 的 short gamma 开始爆炸——越临近到期，偏离中心的每一步都亏得更快。<b>Iron fly 不是"放着不动"的策略</b>，穿 BE 必须有离场计划。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>翅膀宽度 = 最大风险</b>：宽 10 点、收 $6，最多亏 $4——开仓前先算好最坏情况</li>
+    <li><b>IV 高时开仓才划算</b>：权利金是你的全部利润来源，IV 低时 fly 又贵（相对）又难赚</li>
+    <li><b>别等到期被 pin 在 BE 附近</b>：到期日钉在 94/106 附近最难受，提前平仓落袋</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Iron butterfly 的最大盈利在哪？</summary><p><span class="ans">S=100，到期正好钉在中心。</span>身体是个尖顶，偏离一分就少赚一分。</p></details>
+  <details><summary>Q2 · 它和 iron condor 的区别？</summary><p><span class="ans">Fly 的身体是单个 strike（盈利区间窄、权利金高），condor 的身体是个区间（盈利区间宽、权利金低）。</span>一个要"钉住"，一个允许"晃悠"。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=85,xMax=115,plMin=-5,plMax=7;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 6-M(0,s-100)-M(0,100-s)+M(0,s-110)+M(0,90-s);};
+var s, be1=94, be2=106;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'中心 100');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'94','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'106','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(85),H-10,'85');txt(X(115),H-10,'115');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
