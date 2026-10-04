@@ -1,0 +1,111 @@
+<div class="hero">
+  <p class="kicker">第 17 课 · Intermediate — DEBIT SPREADS</p>
+  <h1>Bear Put Spread <span class="cn">熊市看跌价差</span></h1>
+  <p class="tagline">看跌的便宜版——跌起来才赚钱。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买入 100P</b><span>long 腿<br>付钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>卖出 95P</b><span>short 腿<br>收钱补贴</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净付 $2</b><span>S≤95 赚满 $3<br>亏最多 $2</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：买入 100P、卖出 95P，净付 $2。Bull call spread 的镜像。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="85" max="110" value="95" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$3（宽度−debit）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">98</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$2（净付 debit）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge neg">Delta −</span><span>方向敞口实在，跌赚钱</span></div>
+  <div class="greek"><span class="badge pos">Gamma +</span><span>跌起来加速</span></div>
+  <div class="greek"><span class="badge neg">Theta −（温和）</span><span>每天扣钱，比裸买 put 慢</span></div>
+  <div class="greek"><span class="badge pos">Vega +（温和）</span><span>恐慌时小幅利好</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>看跌 + 定义风险：真觉得要跌，$2 买张下跌彩票</li>
+    <li>对冲多头组合：大盘要回调时买几组，比直接卖股票便宜</li>
+    <li>代替 long put：入场费打折，代价是下跌空间 capped 在 95</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 小跌不到 BE</p>
+  <p class="body">跌了 1 块，不够。BE 在 98，debit 照样打水漂。<b>Debit spread 要的是"跌到位"</b>，温水煮青蛙式的阴跌养不活它。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>宽度选 5–10 点，赔率 ≥ 1.5</b>：和 bull call spread 一样的及格线</li>
+    <li><b>Put skew 是朋友</b>：put 本来就贵，spread 把贵的 long 腿和更贵的 short 腿对冲掉一部分</li>
+    <li><b>别和 bull put spread 搞混</b>：bull put 是"看不跌"收租（credit），bear put 是"看跌"下注（debit）——方向判断完全不同</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Bear put spread 的盈亏平衡点是多少？</summary><p><span class="ans">98。</span>Long strike 100 减去净付 $2。</p></details>
+  <details><summary>Q2 · 何时用它而不用 bull put spread？</summary><p><span class="ans">真看跌（要"跌起来"赚钱）时。</span>Bull put spread 是"看不跌"收租，bear put spread 是"看跌"下注。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=85,xMax=110,plMin=-3,plMax=4;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return M(0,100-s)-M(0,95-s)-2;};
+var s, be=98;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(34,197,94,.12)');
+shade(be,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-10,'B/E 98','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(85),H-10,'85');txt(X(110),H-10,'110');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

@@ -1,0 +1,128 @@
+<div class="hero">
+  <p class="kicker">第 15 课 · Intermediate — CALENDAR SPREADS</p>
+  <h1>Diagonal Put Spread <span class="cn">看跌对角价差</span></h1>
+  <p class="tagline">偏空版对角——温和看跌 + 收租。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 7 天 95P</b><span>近月 OTM<br>收钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>买入 37 天 100P</b><span>远月 ITM<br>付钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净付约 $3.35</b><span>偏空 + 收时间价值</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">近月到期时的 payoff：峰值偏向 short strike（95）一侧，带方向。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="75" max="115" value="95" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">≈$2.77（S≈95）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">≈$100</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">debit（约 $3.35）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge neg">Delta −</span><span>偏空——long 腿 ITM put，delta 实在</span></div>
+  <div class="greek"><span class="badge pos">Theta +（温和）</span><span>近月 short 腿衰减更快</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>long vol，波动率上升利好</span></div>
+  <div class="greek"><span class="badge neg">Gamma 小</span><span>期限差对冲了一部分</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>温和看跌 + 收租：跌也行、横盘也行</li>
+    <li>对冲多头组合的下跌风险，比直接买 put 便宜</li>
+    <li>看空但不想裸卖 call（风险无限）的时候</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 两头不靠</p>
+  <p class="body">大涨：long 腿贬值；大跌破 95：盈利 capped，还被 short 腿拖回去一点。<b>Diagonal 赚的是"温和"</b>，和看涨对角一个脾气。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>Long 腿选 ITM 远月 put</b>：delta 绝对值高、抗时间损耗——它是你的"空头替代品"</li>
+    <li><b>Short 选 OTM 近月</b>：多收时间价值，strike 放在支撑位附近</li>
+    <li><b>别和 bear put spread 搞混</b>：diagonal 多了个期限差，赚的是时间 + 方向，spread 只赚方向</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Diagonal put spread 何时用？</summary><p><span class="ans">温和看跌 + 收租。</span>跌也行、横盘也行，大涨大跌都不行。</p></details>
+  <details><summary>Q2 · Long 腿怎么选？</summary><p><span class="ans">ITM 远月 put。</span>Delta 绝对值高才有实在的方向敞口，还抗时间损耗。</p></details>
+</div>
+
+<script>
+(function(){
+function erf(x){var s=x<0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);var y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+function N(x){return 0.5*(1+erf(x/Math.SQRT2));}
+function npdf(x){return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);}
+function bsCall(S,K,T,r,sig){
+  if(T<=0.0001) return Math.max(0,S-K);
+  if(sig<=0.0001) return Math.max(0,S-K*Math.exp(-r*T));
+  var d1=(Math.log(S/K)+(r+0.5*sig*sig)*T)/(sig*Math.sqrt(T));
+  var d2=d1-sig*Math.sqrt(T);
+  return S*N(d1)-K*Math.exp(-r*T)*N(d2);
+}
+function bsPut(S,K,T,r,sig){return bsCall(S,K,T,r,sig)-S+K*Math.exp(-r*T);}
+var R=0.05, SIG=0.30, D=1/365;
+var DEBIT=bsPut(100,100,37*D,R,SIG)-bsPut(100,95,7*D,R,SIG);
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=75,xMax=115,plMin=-4,plMax=4;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return bsPut(s,100,30*D,R,SIG)-M(0,95-s)-DEBIT;};
+var s, be=100;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(34,197,94,.12)');
+shade(be,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'长腿 100');
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-24,'短腿 95');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-10,'B/E≈100','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(75),H-10,'75');txt(X(115),H-10,'115');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='近月到期股价 $'+S+'  →  单股 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
