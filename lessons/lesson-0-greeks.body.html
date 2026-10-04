@@ -5,33 +5,87 @@
 </div>
 
 <div class="card">
-  <p class="sec">先建立直觉</p>
-  <p class="body">期权价格受五个变量影响：股价、时间、波动率、利率、行权价。Greeks 就是"价格对每个变量的敏感度"——<b>Delta</b> 管方向，<b>Gamma</b> 管加速度，<b>Theta</b> 管时间，<b>Vega</b> 管波动率，<b>Rho</b> 管利率。后面 58 节课里，每个策略的"希腊字母脾气"都是这五个字母的排列组合。</p>
+  <p class="sec">价格从哪来 · 字母是怎么决定价格的</p>
+  <p class="body">期权价格不是拍脑袋定的，是定价模型（Black-Scholes）算出来的。模型吃 <b>5 个输入</b>——股价 S、行权价 K、剩余时间 T、无风险利率 r、隐含波动率 σ——吐出一个理论价。<br><br>Greeks 就是<b>「价格对每个输入的敏感度」</b>，数学上叫偏导数：</p>
+  <ul class="ul">
+    <li><b>Delta</b> = ∂C/∂S：股价动 1 元，价格动多少</li>
+    <li><b>Gamma</b> = ∂²C/∂S²：delta 自己动多快（二阶）</li>
+    <li><b>Theta</b> = ∂C/∂t：时间过一天，价格掉多少</li>
+    <li><b>Vega</b> = ∂C/∂σ：波动率涨 1%，价格动多少</li>
+    <li><b>Rho</b> = ∂C/∂r：利率涨 1%，价格动多少</li>
+  </ul>
+  <p class="body">所以价格的<b>每一次变动</b>，都可以拆成五个字母的贡献之和——这就是综合影响的公式，下一节有交互演示可以亲手拆。</p>
 </div>
 
 <div class="card">
-  <p class="sec">Delta · 方向盘</p>
-  <p class="body">股价涨 1 元，期权涨多少。Call 为正、Put 为负，范围 0~1（call）/ −1~0（put）。<br><b>实用读法</b>：|Delta| 粗略 ≈ 到期实值的概率。Delta 0.25 的 put，大约 25% 概率到期实值——<b>你的卖 put 筛子（delta ≤ 0.25）用的就是这把尺。</b></p>
+  <p class="sec">Delta · 方向盘（深一层）</p>
+  <ul class="ul">
+    <li><b>对冲比率</b>：delta 0.6 的 call ≈ 持有 0.6 股正股的敞口。做市商就靠这个配平 delta 对冲。</li>
+    <li><b>Put-Call 关系</b>：同行权价同到期，put delta = call delta − 1（call 是 0.6，对应 put 就是 −0.4）。</li>
+    <li><b>|Delta| ≈ 到期实值概率</b>：粗略但好用。delta 0.25 的 put，大约 75% 概率虚值到期——卖 put 筛子用的就是这把尺。</li>
+  </ul>
 </div>
 
 <div class="card">
-  <p class="sec">Gamma · 油门</p>
-  <p class="body">Delta 的变化率——方向盘转得有多快。买方爱它（涨起来加速），卖方怕它（跌起来亏得越来越快）。<br><b>关键</b>：平值附近 gamma 最大，越虚值/实值越小。这就是 0DTE 最刺激的原因：到期日当天，ATM 的 gamma 爆表，SPX 动一点点，delta 就翻脸。</p>
+  <p class="sec">Gamma · 油门（深一层）</p>
+  <ul class="ul">
+    <li><b>凸性</b>：long gamma 的组合，波动越大越占便宜。专业玩法叫 gamma scalping——买入跨式后高抛低吸对冲 delta，赚的是 realized vol 超过 implied vol 的部分。</li>
+    <li><b>Gamma-Theta 权衡</b>：theta 就是买 gamma 交的保费。gamma 越大（越平值、越临近到期），theta 烧得越快。<b>没有免费的 gamma。</b></li>
+    <li><b>卖方的噩梦</b>：short gamma 意味着标的朝不利方向每走一步，亏损都在加速——卖方最怕的正是「又快又狠」的行情。</li>
+  </ul>
 </div>
 
 <div class="card">
-  <p class="sec">Theta · 时间税</p>
-  <p class="body">每天流逝，期权贬值多少。买方为负（每天扣钱），卖方为正（每天收钱）。越临近到期，绝对值越大——最后一周的时间价值流失是最快的。<br><b>你的每天睁眼收入</b>：short put、covered call、bear call spread，本质上都是在收 theta。</p>
+  <p class="sec">Theta · 时间税（深一层）</p>
+  <ul class="ul">
+    <li><b>非线性</b>：时间价值流失在最后 30–45 天急剧加速，0DTE 当天最疯狂——这也是 0DTE 策略的 theta 金矿。</li>
+    <li><b>ATM 被杀得最狠</b>：平值期权的 theta 绝对值最大。时间杀死的总是「最有希望」的期权。</li>
+    <li><b>周末也扣税</b>：周五收盘到周一开盘，3 天的 theta 一次性结算。周五卖出的期权，周一开盘天然带着 3 天的时间损耗。</li>
+  </ul>
 </div>
 
 <div class="card">
-  <p class="sec">Vega · 情绪税</p>
-  <p class="body">波动率（IV）涨 1%，期权涨多少。买方为正（爱波动），卖方为负（怕波动）。期限越长 vega 越大。<br>财报前 IV 膨胀→买方开心；财报后 IV 落地→买方哭。第 1 课的 <b>IV crush 就是 vega 的锅</b>。</p>
+  <p class="sec">Vega · 情绪税（深一层）</p>
+  <ul class="ul">
+    <li><b>谁 vega 最大</b>：平值 + 长期限。越虚值、越临近到期，vega 越小——0DTE 的 vega 几乎可以忽略，它的世界是 gamma 的。</li>
+    <li><b>赌的是 implied，不是 realized</b>：财报前 IV 膨胀→vega 为正的头寸升值；财报后 IV crush→贬值。跟股价涨没涨无关。</li>
+    <li><b>偏斜</b>：虚值 put 的 IV 通常比 call 高——市场愿意为下跌保险付溢价。这就是为什么 put 看起来「贵」。</li>
+  </ul>
 </div>
 
 <div class="card">
   <p class="sec">Rho · 小透明</p>
-  <p class="body">对利率的敏感度。短期限基本忽略，只有 LEAPS 这种长期限的才需要看一眼。知道有它就行。</p>
+  <p class="body">Call 为正、put 为负：利率涨，call 涨、put 跌（持有现金 vs 持有股票的机会成本逻辑）。幅度很小，短期限基本忽略，只有 LEAPS 和利率大幅变动时才值得看一眼。</p>
+</div>
+
+<div class="card">
+  <p class="sec">综合影响 · 一个公式拆开每天的盈亏</p>
+  <p class="body">把五个偏导数拼起来，就是价格变动的<b>总微分</b>：</p>
+  <p class="body" style="text-align:center;font-size:15px;margin:10px 0"><b>dC ≈ Delta·dS + ½·Gamma·(dS)² + Theta·dt + Vega·dσ + Rho·dr</b></p>
+  <ul class="ul">
+    <li><b>一阶项</b>（delta/theta/vega/rho）：小变动时够用，线性叠加。</li>
+    <li><b>二阶项</b>（gamma）：dS 很大时，½Γ(dS)² 会盖过 delta——<b>凸性在暴涨暴跌时主导一切</b>。</li>
+    <li><b>随到期临近</b>：theta 绝对值↑、ATM gamma↑↑、vega↓、delta 趋向 0 或 1（二值化）。</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">交互 · 盈亏拆解器</p>
+  <p class="muted">30 天期平值 call（S=K=$100，IV 30%）。拖滑杆，亲手把价格变动拆成每个字母的贡献。</p>
+  <div class="ctl"><span>股价变动 dS</span><input id="g-ds" type="range" min="-10" max="10" step="0.5" value="0" class="slider"><b id="g-dsv">$0</b></div>
+  <div class="ctl"><span>经过天数 dt</span><input id="g-dt" type="range" min="0" max="7" step="1" value="0" class="slider"><b id="g-dtv">0天</b></div>
+  <div class="ctl"><span>IV 变动 dσ</span><input id="g-dv" type="range" min="-10" max="10" step="0.5" value="0" class="slider"><b id="g-dvv">+0%</b></div>
+  <div id="g-rows" style="margin-top:10px"></div>
+  <p class="readout" id="g-total"></p>
+  <p class="muted" id="g-note" style="margin-top:6px"></p>
+</div>
+
+<div class="card">
+  <p class="sec">交互 · Delta 随实值程度变化</p>
+  <p class="muted">Call，K=100，30 天到期，IV 30%。拖动股价，看 delta 从 0 爬到 1——注意平值附近曲线最陡（gamma 最大处）。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="70" max="130" value="100" step="0.5" class="slider">
+  <p id="plread" class="readout"></p>
 </div>
 
 <div class="card">
@@ -47,28 +101,81 @@
 </div>
 
 <div class="card">
-  <p class="sec">交互 · Delta 随实值程度变化</p>
-  <p class="muted">Call，K=100，30 天到期，IV 30%。拖动股价，看 delta 从 0 爬到 1——注意平值附近曲线最陡（gamma 最大处）。</p>
-  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
-  <input id="px" type="range" min="70" max="130" value="100" step="0.5" class="slider">
-  <p id="plread" class="readout"></p>
-</div>
-
-<div class="card">
   <p class="sec">实战小贴士</p>
   <ul class="ul">
-    <li><b>Delta 当概率尺</b>：卖出期权时用 |delta| 粗估到期实值概率——delta 0.25 的 put，约 75% 概率虚值到期</li>
-    <li><b>0DTE 的命门是 gamma</b>：到期日 ATM gamma 极大，标的一动 delta 就翻脸——日内策略必须设硬止损，不给 gamma 发作的时间</li>
-    <li><b>卖方的收入结构</b>：short theta（每天收租）+ short vega（卖波动）；承担的风险是 short gamma（大涨大跌时亏得加速）</li>
-    <li><b>买 LEAPS 看 vega</b>：长期限期权 vega 大，IV 高点买入的话，波动率回落会吃掉不少价值</li>
+    <li><b>对不上账时，逐项拆</b>：任何一天的盈亏 = delta 贡献 + theta 贡献 + vega 贡献（+gamma 二阶）。方向对了还亏钱？去看 vega 和 theta 那两项。</li>
+    <li><b>Gamma-Theta 权衡</b>：买 gamma（long call/put、跨式）就是在付 theta 保费——方向没走出来之前，每天都在烧钱。</li>
+    <li><b>0DTE 的命门是 gamma</b>：到期日 ATM gamma 极大，标的一动 delta 就翻脸——日内策略必须设硬止损，不给 gamma 发作的时间。</li>
+    <li><b>买 LEAPS 看 vega</b>：长期限期权 vega 大，IV 高点买入的话，波动率回落会吃掉不少价值。</li>
   </ul>
 </div>
 
 <div class="card">
   <p class="sec">随堂小测</p>
-  <details><summary>Q1 · 卖出 put（short put）的 theta 是正还是负？对你意味着什么？</summary><p><span class="ans">正。</span>每天收时间价值——这就是你的"收租"。代价是 gamma 和 vega 为负，大跌和恐慌时亏得快。</p></details>
+  <details><summary>Q1 · 卖出 put（short put）的 theta 是正还是负？对你意味着什么？</summary><p><span class="ans">正。</span>每天收时间价值——这就是"收租"。代价是 gamma 和 vega 为负，大跌和恐慌时亏得快。</p></details>
   <details><summary>Q2 · 为什么 0DTE 期权的 gamma 特别大？</summary><p><span class="ans">越临近到期，平值附近的 delta 翻转越剧烈。</span>同样 1 元的股价移动，到期日当天能让 delta 从 0.2 跳到 0.8，gamma 自然爆表。</p></details>
+  <details><summary>Q3 · 股票涨 $5，你的 long call 涨了 $4，但 delta 只有 0.6（0.6×5=$3），多出来的 $1 哪来的？</summary><p><span class="ans">Gamma 二阶项。</span>½·Γ·(dS)² 在 $5 的移动下已经不可忽略——凸性在波动变大时开始主导。再扣掉一天的 theta，就是完整的账。</p></details>
 </div>
+
+<style>
+.ctl{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}
+.ctl span{flex:0 0 92px;color:#8b93a7}
+.ctl b{flex:0 0 58px;text-align:right;font-size:13px}
+.grow{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:12.5px}
+.grow .lab{flex:0 0 92px;color:#8b93a7}
+.grow .barwrap{flex:1;height:10px;background:#0e1428;border-radius:5px;position:relative;overflow:hidden}
+.grow .bar{position:absolute;top:0;bottom:0;border-radius:5px}
+.grow .val{flex:0 0 76px;text-align:right;font-weight:700}
+</style>
+
+<script>
+(function(){
+var K=100,S0=100,T0=30/365,R=0.05,SIG0=0.30;
+function erf(x){var s=x<0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);var y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+function N(x){return 0.5*(1+erf(x/Math.SQRT2));}
+function npdf(x){return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);}
+function bsCall(S,K,T,r,sig){
+  if(T<=0.0001) return Math.max(0,S-K);
+  if(sig<=0.0001) return Math.max(0,S-K*Math.exp(-r*T));
+  var d1=(Math.log(S/K)+(r+0.5*sig*sig)*T)/(sig*Math.sqrt(T));
+  var d2=d1-sig*Math.sqrt(T);
+  return S*N(d1)-K*Math.exp(-r*T)*N(d2);
+}
+var C0=bsCall(S0,K,T0,R,SIG0);
+var h=0.5;
+var DELTA=(bsCall(S0+h,K,T0,R,SIG0)-bsCall(S0-h,K,T0,R,SIG0))/(2*h);
+var GAMMA=(bsCall(S0+h,K,T0,R,SIG0)-2*C0+bsCall(S0-h,K,T0,R,SIG0))/(h*h);
+var THETA=bsCall(S0,K,T0-1/365,R,SIG0)-C0;
+var VEGA=(bsCall(S0,K,T0,R,SIG0+0.01)-bsCall(S0,K,T0,R,SIG0-0.01))/2;
+var dsEl=document.getElementById('g-ds'),dtEl=document.getElementById('g-dt'),dvEl=document.getElementById('g-dv');
+var rowsEl=document.getElementById('g-rows'),totEl=document.getElementById('g-total'),noteEl=document.getElementById('g-note');
+function fmt(v){return (v>=0?'+$':'-$')+Math.abs(v).toFixed(2);}
+function upd(){
+  var dS=parseFloat(dsEl.value),days=parseFloat(dtEl.value),dV=parseFloat(dvEl.value);
+  document.getElementById('g-dsv').textContent=(dS>=0?'+$':'-$')+Math.abs(dS).toFixed(1);
+  document.getElementById('g-dtv').textContent=days+'天';
+  document.getElementById('g-dvv').textContent=(dV>=0?'+':'')+dV.toFixed(1)+'%';
+  var cD=DELTA*dS, cG=0.5*GAMMA*dS*dS, cT=THETA*days, cV=VEGA*dV;
+  var approx=cD+cG+cT+cV;
+  var exact=bsCall(S0+dS,K,Math.max(0.0001,T0-days/365),R,SIG0+dV/100)-C0;
+  var comps=[['Delta·dS',cD],['½Gamma·(dS)²',cG],['Theta·dt',cT],['Vega·dσ',cV]];
+  var mx=0.001;comps.forEach(function(c){mx=Math.max(mx,Math.abs(c[1]));});
+  var html='';
+  comps.forEach(function(c){
+    var pct=Math.abs(c[1])/mx*50;
+    var left=c[1]<0?(50-pct):50;
+    var col=c[1]>=0?'#22c55e':'#ef4444';
+    html+='<div class="grow"><span class="lab">'+c[0]+'</span><div class="barwrap"><div class="bar" style="left:'+left+'%;width:'+pct+'%;background:'+col+'"></div></div><span class="val" style="color:'+col+'">'+fmt(c[1])+'</span></div>';
+  });
+  rowsEl.innerHTML=html;
+  totEl.textContent='公式近似 '+fmt(approx)+'  vs  精确值 '+fmt(exact)+'  （期权现价 $'+C0.toFixed(2)+'）';
+  totEl.style.color='#7dd3fc';
+  noteEl.textContent='dS 很大时注意看 Gamma 二阶项的占比——这就是"凸性主导一切"。';
+}
+[dsEl,dtEl,dvEl].forEach(function(e){e.addEventListener('input',upd);});
+upd();
+})();
+</script>
 
 <script>
 (function(){

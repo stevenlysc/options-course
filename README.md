@@ -31,6 +31,9 @@ deploy_cf.py               # 发布 Worker `options-course` + 确保 /options �
 最后一节必须是通用实战 tips（3-4 条），不写具体持仓、不写会过期的数字——
 课件是长期资产，持仓每天都在变。
 
+例外：第 0 课（Greeks 预备课）为加长版，多出「价格从哪来」「综合影响公式」两节
+和「盈亏拆解器」「Delta 曲线」两个交互。
+
 ## 部署说明
 
 - Cloudflare Worker 名：`options-course`
