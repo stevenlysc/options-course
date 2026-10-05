@@ -1,0 +1,122 @@
+<div class="hero">
+  <p class="kicker">第 30 课 · Advanced — NEUTRAL</p>
+  <h1>Long Put Condor <span class="cn">买入看跌秃鹰</span></h1>
+  <p class="tagline">四腿帐篷的另一面——和 long call condor 是同一头寸。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买入 110P + 卖出 105P</b><span>付 $10 / 收 $6.5<br>净付 $3.5</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 100P + 买入 95P</b><span>收 $3 / 付 $1.5<br>净收 $1.5</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净付 $2</b><span>100–105 赚满 $3<br>两头亏满 $2</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：买入 110P（$10）、卖出 105P（$6.5）、卖出 100P（$3）、买入 95P（$1.5），净付 $2。到期股价落在 100–105 之间赚满 $3。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$3（100–105）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">97 / 108</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$2（≤95 或 ≥110）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta ~0</span><span>四条腿互相抵消，方向中性</span></div>
+  <div class="greek"><span class="badge neg">Theta −</span><span>净付 debit，时间是敌人</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>long premium 占上风，波动放大帮忙</span></div>
+  <div class="greek"><span class="badge pos">Gamma +（小）</span><span>区间内越接近中心越舒服</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>预期横盘窄幅震荡：股价在 100–105 之间磨，就是它的舒适区</li>
+    <li>想要 butterfly 的容错版：中间赚满的区间比 butterfly 宽一倍</li>
+    <li>赌 pin：财报后、除权后，股价容易被钉在整数关口附近</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 跑出帐篷 + 时间流逝</p>
+  <p class="body">两个死因：<b>大涨或大跌穿出 95–110</b>，两头都是亏满 $2；<b>一直不进区间</b>——每天 theta 扣血，越临近到期帐篷塌得越快。Condor 是"等股价自己走进来"的策略，走不进来就是纯损耗。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>它和第 29 课的 long call condor 是同一头寸</b>：put-call parity 保证两者到期 payoff 完全一样，只是用 put 还是 call 搭出来——选流动性好、买卖价差小的那一边搭</li>
+    <li><b>中间区间越宽越贵</b>：把 100P/105P 换成 98P/107P，赚满区间变宽，但 debit 也跟着涨，自己算笔账</li>
+    <li><b>别等到期</b>：赚到最大盈利七八成就可以考虑走，剩下的时间价值不值得赌穿仓风险</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 为什么 100–105 之间是赚满 $3，而不是更多？</summary><p><span class="ans">四条腿的内在价值在 100–105 之间恒为 $5。</span>110P 值 110−S，105P 值 105−S，100P 和 95P 归零：(110−S)−(105−S) = $5，减去 $2 成本 = $3。中间两条 short 腿互相锁死，净值动不了。</p></details>
+  <details><summary>Q2 · Put condor 和 call condor 什么时候选 put 版？</summary><p><span class="ans">看哪边的期权更便宜、流动性更好。</span>Payoff 完全一样，所以选买卖价差小、挂单厚的 strikes 搭——省下的滑点就是多赚的。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-3,plMax=4;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return M(0,110-s)-M(0,105-s)-M(0,100-s)+M(0,95-s)-2;};
+var s, be1=97, be2=108;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95P');
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100P');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105P');
+el('line',{x1:X(110),y1:padT,x2:X(110),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(110),H-10,'110P');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 97','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 108','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

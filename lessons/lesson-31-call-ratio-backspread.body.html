@@ -1,0 +1,118 @@
+<div class="hero">
+  <p class="kicker">第 31 课 · Advanced — VOLATILITY</p>
+  <h1>Call Ratio Backspread <span class="cn">看涨比率反价差</span></h1>
+  <p class="tagline">花小钱赌大涨——小跌小赚，大跌不亏，大涨起飞。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 1 张 100C</b><span>收 $4.5<br>平值 call</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 2 张 105C</b><span>付 $1.75/张<br>虚值 call</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净收 $1</b><span>下行有垫 $1<br>上行无限敞口</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 100C（$4.5），买入 2 张 105C（$1.75/张），净收 $1。105 附近是"百慕大"——亏最多 $4；大涨则无限赚。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">无限（大涨）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">101 / 109</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$4（S=105）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +</span><span>两张 long call，天然看涨</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>波动率多头，IV 放大帮忙</span></div>
+  <div class="greek"><span class="badge neg">Theta −</span><span>两张虚值 long call 每天贬值</span></div>
+  <div class="greek"><span class="badge pos">Gamma +</span><span>上行越涨 delta 越大，越涨越顺</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>强烈看涨 + 预期波动放大：比如财报前赌上行大动</li>
+    <li>想参与大涨但不想付全价：收的 $1  credit 垫着，下跌不心疼</li>
+    <li>替代裸买 call：大涨时 payoff 比单张 long call 更陡</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 温水煮青蛙钉在 short strike</p>
+  <p class="body">股价<b>不涨不跌、黏在 105 附近到期</b>是最疼的——short 100C 被深度实值，两张 105C 归零，亏满 $4，是收的 $1 的四倍。小涨到 103–107 也是亏。要么大涨，要么别动，半吊子最伤。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>它是波动率多头</b>：IV 上涨帮你，IV 塌陷伤你——财报前开仓要掂量 IV crush 那一下</li>
+    <li><b>105 附近是百慕大</b>：到期前股价黏在 short strike 附近、浮亏超过收的 credit 两倍就考虑走，别等亏满</li>
+    <li><b>上行没有天花板，但也没有免费午餐</b>：小涨（101–109 之间）是亏钱的，真看大涨才用它，不如直接买 call 干脆</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 为什么 S=105 到期亏得最多？</summary><p><span class="ans">Short 100C 实值 $5，两张 105C 归零。</span>组合价值 = $1 − $5 + 0 = −$4。Short 腿全额赔付，long 腿一张不剩，这是反价差最惨的位置。</p></details>
+  <details><summary>Q2 · 下跌时为什么最多只赚 $1？</summary><p><span class="ans">S≤100 时三条腿全部归零。</span>100C 和两张 105C 都一文不值，组合只剩当初收的 $1 credit——下跌是它的"保底"，不是它的"行情"。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-5,plMax=12;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 1-M(0,s-100)+2*M(0,s-105);};
+var s, be1=101, be2=109;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(34,197,94,.12)');
+shade(be1,be2,'rgba(239,68,68,.12)');
+shade(be2,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100C');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105C');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 101','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 109','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

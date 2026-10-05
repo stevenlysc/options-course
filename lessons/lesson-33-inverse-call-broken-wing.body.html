@@ -1,0 +1,120 @@
+<div class="hero">
+  <p class="kicker">第 33 课 · Advanced — NEUTRAL</p>
+  <h1>Inverse Call Broken Wing <span class="cn">反向看涨折翼</span></h1>
+  <p class="tagline">收钱的山谷——横盘赚钱，大动才疼。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 93C</b><span>收 $8<br>实值 call</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 2 张 100C</b><span>付 $3.5/张<br>平值 call</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 105C</b><span>收 $1.5<br>虚值 call</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 93C（$8）、买入 2 张 100C（$3.5/张）、卖出 105C（$1.5），净收 $2.5。S≤93 留 $2.5，S=100 亏最多 $4.5，S≥105 留 $0.5。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$2.5（≤93）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">95.5 / 104.5</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$4.5（S=100）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta ~0</span><span>山谷底附近方向中性</span></div>
+  <div class="greek"><span class="badge pos">Theta +</span><span>净收 credit，时间是朋友</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>short vol，波动放大直接打脸</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>山谷底越晃越亏</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>预期横盘：股价不动，$2.5 credit 落袋</li>
+    <li>IV 高位卖波动率：short vol 结构，赚 IV 塌陷的钱</li>
+    <li>不想选方向：两头都赚钱，中间才亏——和第 32 课正好镜像</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 冲进山谷 + 波动率爆炸</p>
+  <p class="body">两个杀手：<b>股价冲进 95.5–104.5 的山谷</b>，S=100 时亏 $4.5，是收的 $2.5 的近两倍；<b>IV 飙升</b>——short vol 的结构，波动率一放大，两张 long call 撑不住三条 short 腿。收 credit 的策略，亏起来都比收的多。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>它是 short vol</b>：IV 上涨直接打脸，财报前卖要三思——财报后 IV crush 才是它的菜</li>
+    <li><b>山谷底提前跑</b>：股价往 100 靠、浮亏超过收的 credit 一半就考虑走人，别等亏满</li>
+    <li><b>两头赚钱不代表稳赚</b>：上行 S≥105 只剩 $0.5，真正的舒适区在下行——搭之前看好自己怕的是哪边</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 为什么 S=100 亏得最多？</summary><p><span class="ans">Short 93C 实值 $7，两张 long 100C 归零。</span>组合价值 = $2.5 − $7 + 0 − 0 = −$4.5。Short 腿全额赔付、long 腿一张不剩，是山谷的最深处。</p></details>
+  <details><summary>Q2 · S≥105 为什么只能留 $0.5？</summary><p><span class="ans">三条腿的内在价值互相抵消，只剩 $2。</span>S≥105 时：−(S−93) + 2(S−100) − (S−105) = −2，加上 $2.5 credit = $0.5。折翼的不对称就体现在这里——上行天花板比下行低。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-5.5,plMax=3.5;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 2.5-M(0,s-93)+2*M(0,s-100)-M(0,s-105);};
+var s, be1=95.5, be2=104.5;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(34,197,94,.12)');
+shade(be1,be2,'rgba(239,68,68,.12)');
+shade(be2,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(93),y1:padT,x2:X(93),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(93),H-10,'93C');
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100C');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105C');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 95.5','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 104.5','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
