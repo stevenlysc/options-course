@@ -1,0 +1,116 @@
+<div class="hero">
+  <p class="kicker">第 54 课 · Expert — VOLATILITY</p>
+  <h1>Strip <span class="cn">条式组合</span></h1>
+  <p class="tagline">觉得要出大行情、方向偏空但不敢全押：1 张 call 配 2 张 put，波动两边都下注。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买入 1 张 100C</b><span>付 $3.5<br>上行彩票</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 2 张 100P</b><span>付 $6<br>下行双倍</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>偏空波动赌注</b><span>净付 $10<br>S=100 最疼</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：买入 1 张 100C（$3.5）+ 2 张 100P（$6），净付 $10。S=100 到期最疼（亏满 $10），两边走远都赚钱，下行赚得比上行快一倍。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="70" max="130" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$190（S→0）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">95 / 110</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$10（S=100 最疼）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge neg">Delta −（≈ −0.4）</span><span>put 多一张，整体偏空</span></div>
+  <div class="greek"><span class="badge pos">Vega +（大）</span><span>三条 long 腿，波动放大最开心</span></div>
+  <div class="greek"><span class="badge neg">Theta −（大）</span><span>三条腿一起烧时间价值，横盘最疼</span></div>
+  <div class="greek"><span class="badge pos">Gamma +（大）</span><span>大波动时加速，越远越快</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>觉得要出大行情、方向偏空但不敢全押：比 straddle 多一倍下行敞口</li>
+    <li>财报/大事件前赌波动：方向错了，上行那边还能回点血</li>
+    <li>对比 straddle 想清楚再选：多买的那张 put 就是"我觉得跌的概率更大"</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 横盘 + 小波动</p>
+  <p class="body">Strip 是三条 long 腿，<b>横盘等于三倍烧钱</b>——$10 的 debit 靠时间价值一点点蒸发；<b>小波动也不行</b>——上行要过 110、下行要破 95 才回本，那种涨 5% 的"小作文行情"覆盖不了成本。波动赌注要的是大动，不是小动。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>成本是三条腿权利金之和</b>：下行至少要走过一半 debit（到 95）才回本，先算好再下注</li>
+    <li><b>事件前开、事件后走</b>：波动落地后权利金塌得最快，别拿着等"再飞一会儿"</li>
+    <li><b>别和 straddle 搞混</b>：straddle 是 1+1 对称赌波动，strip 是 1+2 偏空——多花的钱买的是方向倾斜</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Strip 和 straddle 的区别？</summary><p><span class="ans">straddle 是 1 call + 1 put 对称，strip 是 1 call + 2 put。</span>下行多一倍，整体偏空。</p></details>
+  <details><summary>Q2 · 到期股价正好 100，strip 亏多少？</summary><p><span class="ans">亏满 $10 debit。</span>三条腿全部归零，这是它最疼的结局。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=70,xMax=130,plMin=-12,plMax=55;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return M(s-100,0)+2*M(100-s,0)-10;};
+var s, be1=95, be2=110;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(34,197,94,.12)');
+shade(be1,be2,'rgba(239,68,68,.12)');
+shade(be2,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100C/100P');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 95','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 110','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(70),H-10,'70');txt(X(130),H-10,'130');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

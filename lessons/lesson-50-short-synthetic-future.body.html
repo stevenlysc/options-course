@@ -1,0 +1,113 @@
+<div class="hero">
+  <p class="kicker">第 50 课 · Expert — SYNTHETICS</p>
+  <h1>Short Synthetic Future <span class="cn">合成空头</span></h1>
+  <p class="tagline">不用借券也能做空：卖 call 买 put，搭出一条和做空股票一样的空头。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 100C</b><span>收 $3.5<br>上行义务</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 100P</b><span>付 $3<br>下行权利</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>≈ 做空股票</b><span>净收 $0.5<br>Delta ≈ −1</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 100C（收 $3.5），买入 100P（付 $3），净收 $0.5。到期 payoff 和做空 100 股一模一样：跌多少赚多少，涨起来没有顶。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="70" max="130" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$100.50（S→0）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">100.50</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">无限（上行）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge neg">Delta −（≈ −1）</span><span>和做空 100 股一样，涨跌 1:1 反着走</span></div>
+  <div class="greek"><span class="badge pos">Theta +（小）</span><span>short call 每天收时间价值，对冲掉 long put 的损耗</span></div>
+  <div class="greek"><span class="badge">Vega ≈ 0</span><span>同 strike 同到期，call 和 put 的 vega 互相抵消</span></div>
+  <div class="greek"><span class="badge">Gamma 小</span><span>两条腿基本对冲</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>券借不到或融券费太贵时，用期权表达看跌观点</li>
+    <li>做空保证金占用太高时，用合成空头提高资金效率</li>
+    <li>账户不允许直接做空股票时，复制出同样的空头敞口</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 把它当成"有限风险做空"</p>
+  <p class="body">两个坑：<b>上行风险依然无限</b>——"合成"两个字不代表风险变小，暴涨时亏起来和直接做空一样疼；<b>short call 的指派风险</b>——到期前被指派会提前变成股票空头，保证金不够会被券商强制处理。合成空头省的是借券和资金，不是风险。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>和 49 课镜像着记</b>：long synthetic future 是买 C 卖 P 看涨，这个是卖 C 买 P 看跌，payoff 关于 B/E 点中心对称</li>
+    <li><b>别被"净收"迷惑</b>：那 $0.5 只是 put-call 平价的小尾巴，不是策略的利润来源</li>
+    <li><b>先算好保证金</b>：short call 是裸卖方，保证金要求和直接做空股票一个量级，留足余量</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 合成空头是哪两条腿？</summary><p><span class="ans">卖出 100C + 买入 100P。</span>到期 payoff = 100.5 − S，和做空股票一样。</p></details>
+  <details><summary>Q2 · 它和直接做空股票有什么不一样？</summary><p><span class="ans">payoff 一样，上行无限风险也一样。</span>区别在实现方式：不用借券、保证金算法不同，还多个 short call 的指派风险。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=70,xMax=130,plMin=-32,plMax=32;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return -M(s-100,0)+M(100-s,0)+0.5;};
+var s, be=100.5;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(34,197,94,.12)');
+shade(be,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100C/100P');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-24,'B/E 100.5','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(70),H-10,'70');txt(X(130),H-10,'130');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

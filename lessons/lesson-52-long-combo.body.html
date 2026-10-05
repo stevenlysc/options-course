@@ -1,0 +1,115 @@
+<div class="hero">
+  <p class="kicker">第 52 课 · Expert — ARBITRAGE</p>
+  <h1>Long Combo <span class="cn">买入组合</span></h1>
+  <p class="tagline">不想掏买股票的钱、又想吃大涨：卖 put 替 call 付钱，搭个看涨风险反转。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买入 105C</b><span>付 $1.5<br>看涨腿</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 95P</b><span>收 $1.5<br>替 call 付钱</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>看涨风险反转</b><span>净付约 $0.5<br>95–105 之间躺平</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：买入 105C（付 $1.5），卖出 95P（收 $1.5），净付约 $0.5（实际看盘口）。95–105 之间两条腿都归零、小亏躺平，走出区间才动起来。B/E 略高于 105，因为 call 比 put 贵一点。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="60" max="130" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">无限（上行）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">105.50</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$95.50（S→0）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +（≈ +1）</span><span>两头走出区间后，跟股票涨跌 1:1</span></div>
+  <div class="greek"><span class="badge">Theta 小</span><span>两条腿时间价值基本对冲</span></div>
+  <div class="greek"><span class="badge">Vega 小</span><span>long call 和 short put 的 vega 互相抵消</span></div>
+  <div class="greek"><span class="badge">Gamma 小</span><span>区间内几乎不动，穿出 strike 才加速</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>强烈看涨但不想掏买 100 股的钱：低成本复制股票上行</li>
+    <li>财报/事件前赌上行：比直接买 call 便宜（代价是多了下行义务）</li>
+    <li>跌到 95 也认：被指派接货相当于按 95 限价买入股票</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 小涨小跌 + 大跌时被指派</p>
+  <p class="body">两个坑：<b>95–105 之间是躺平区</b>——小涨小跌两头不沾，净付的权利金白烧；<b>大跌时 short put 巨亏还被指派</b>——S→0 能亏 $95.5，还被迫按 95 接货。看涨之前先问自己：跌到 95 接货认不认？</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>先想清楚下行义务</b>：卖 put 收的钱不是白拿的，跌破 95 你就是接盘的人</li>
+    <li><b>strike 间距决定躺平区宽度</b>：105 和 95 离得越远，中间不赚不赔的区间越宽</li>
+    <li><b>别在波动率最高点开</b>：call 买贵了，B/E 会被推得更高，回本更难</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Long combo 的两条腿是什么？</summary><p><span class="ans">买入 OTM call + 卖出 OTM put（同到期）。</span>也叫看涨风险反转。</p></details>
+  <details><summary>Q2 · 到期股价 100，这个组合赚多少？</summary><p><span class="ans">两条腿都归零，亏掉净付的约 $0.5。</span>躺平区内不赚不赔，只亏权利金。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=60,xMax=130,plMin=-40,plMax=28;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return M(s-105,0)-M(95-s,0)-0.5;};
+var s, be=105.5;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(239,68,68,.12)');
+shade(be,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95P');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105C');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-24,'B/E 105.5','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(60),H-10,'60');txt(X(130),H-10,'130');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
