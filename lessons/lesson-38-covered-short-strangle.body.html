@@ -1,0 +1,115 @@
+<div class="hero">
+  <p class="kicker">第 38 课 · Advanced — OTHER</p>
+  <h1>Covered Short Strangle <span class="cn">备兑卖出宽跨式</span></h1>
+  <p class="tagline">股票配宽跨式空头——上下各让一步，收租更从容。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>持有 100 股</b><span>成本 $100<br>底仓</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 95P + 卖出 105C</b><span>收 $5<br>价外宽跨式空头</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>95–105 吃权利金</b><span>≥105 赚满 $10<br>下行 B/E 95</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：100 股 @ $100，卖出 95P/105C 收 $5。95–105 之间组合 = S−95；S≥105 赚满 $10；下行 B/E = 95。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$10（≥105 封顶）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">95（仅下行）</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$190（S→0）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +（≈0.85）</span><span>股票的 +1 被两条空头腿吃掉一点，还是多头脾气</span></div>
+  <div class="greek"><span class="badge neg">Gamma −（小）</span><span>两腿都在价外，gamma 比平值跨式温和得多</span></div>
+  <div class="greek"><span class="badge pos">Theta +</span><span>时间照样是你这边的人</span></div>
+  <div class="greek"><span class="badge neg">Vega −（中）</span><span>波动率膨胀还是疼，但不如跨式疼</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>温和看涨 + 收租：105 被 call 走也认，相当于 105 卖股还多收 $5</li>
+    <li>跨式太贵不敢卖时：宽跨式 credit 少一半，但容错多一倍</li>
+    <li>不想被平值 gamma 咬：两腿都在价外，日常波动不心慌</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 跌破 95 死扛 + 指派后双倍套牢</p>
+  <p class="body">两个代价：<b>跌破 95</b>——95P 被指派，按 95 再接 100 股，仓位翻倍的同时股票还在跌；<b>credit 太薄</b>——$5 只够扛 5% 的跌，下行 B/E 就在 95，容错比看起来小得多。宽跨式的"宽"是横向的，不是纵向的。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>95 必须是真心愿意接货的价</b>：put 腿的 strike 就是你的接货价，不愿意接就别卖这一腿</li>
+    <li><b>105 必须是真心愿意卖股的价</b>：call 腿的 strike 就是你的卖出价，涨到那被 call 走要认</li>
+    <li><b>Credit 比例看总额</b>：$5 的 credit 对应 $190 的下行敞口，这个账要先算再开</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · S=103 到期，组合赚多少？</summary><p><span class="ans">$8。</span>95–105 之间组合 = S−95 = 8：股票赚 $3，credit $5，两腿都归零。</p></details>
+  <details><summary>Q2 · 备兑宽跨式和备兑跨式，哪个更适合怕波动的人？</summary><p><span class="ans">宽跨式。</span>两腿都在价外，gamma 和 vega 都更小；代价是 credit 更少（$5 vs $8）。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-32,plMax=12;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return (s-100)+5-(M(0,s-105)+M(0,95-s));};
+var s, be=95;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(239,68,68,.12)');
+shade(be,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95P');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105C');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-24,'B/E 95','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

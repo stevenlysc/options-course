@@ -1,0 +1,118 @@
+<div class="hero">
+  <p class="kicker">第 36 课 · Advanced — NEUTRAL</p>
+  <h1>Inverse Put Broken-Wing Butterfly <span class="cn">反向看跌折翼蝴蝶</span></h1>
+  <p class="tagline">蝴蝶倒过来卖——横盘和暴涨都赚钱，最怕粘在中间。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 90P</b><span>收 $0.4<br>远下腿，便宜的翅膀</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 2×100P</b><span>付 $6.4<br>中间两腿，山谷底</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 107P</b><span>收 $7.7<br>上腿又宽又贵<br>净收 $1.5</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 90P（$0.4）、买入 2×100P（付 $6.4）、卖出 107P（$7.7），净收 $1.5。注意这是收 credit 的空头蝴蝶，形状是山谷不是帐篷。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$4.5（≤90 封顶）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">94.5 / 105.5</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$5.5（S=100 谷底）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta ≈ 0（略负）</span><span>搭好那一刻基本中性，跌一点点开始带空头味</span></div>
+  <div class="greek"><span class="badge pos">Gamma +（100 附近最大）</span><span>中间买了两条腿，波动放大对你有利</span></div>
+  <div class="greek"><span class="badge neg">Theta −</span><span>净收 credit 但买了中间两条腿，时间是敌人</span></div>
+  <div class="greek"><span class="badge pos">Vega +（小）</span><span>波动率膨胀帮你，适合事件前搭</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>判断"要么横住、要么干脆跌透"：浅跌是最难受的，深跌反而赚钱</li>
+    <li>事件前 IV 相对高位：vega 为正，波动率膨胀不吃亏</li>
+    <li>对冲"温水煮青蛙"式阴跌：小跌不赚钱，要的是干脆利落的方向</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 粘在 100 + 浅跌不深跌</p>
+  <p class="body">两个代价：<b>股价粘在 100 附近到期</b>——山谷底亏满 $5.5，是 credit 的三倍还多；<b>浅跌</b>——跌到 95 以为要成了，结果 94.5 的 B/E 就在脚下，两头不靠。收 credit 的结构，最大亏损往往比 credit 大得多。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>先看最大亏损再看 credit</b>：$1.5 的 credit 对应 $5.5 的最大亏损，这个比例能接受再动手</li>
+    <li><b>别在股价已经贴着 100 时开</b>：谷底就在脚下，开仓等于直接往坑里跳</li>
+    <li><b>它是指数对冲的便宜替代</b>：比直接买 put 便宜，但只保"大跌"不保"小跌"</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 为什么 S=100 时亏得最多？</summary><p><span class="ans">中间两条 long put 在 100 处开始值钱。</span>S=100 时 107P 值 $7，两条 100P 刚要值钱还没值钱，净 intrinsic −$7，加上 $1.5 credit 剩 −$5.5。</p></details>
+  <details><summary>Q2 · S 跌到 80，到期赚多少？封顶吗？</summary><p><span class="ans">$4.5，封顶了。</span>S≤90 后三腿 intrinsic 锁定在 +$3（20−17），加 $1.5 credit = $4.5，再跌也不多赚。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-7,plMax=6;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return -M(0,90-s)+2*M(0,100-s)-M(0,107-s)+1.5;};
+var s, be1=94.5, be2=105.5;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(34,197,94,.12)');
+shade(be1,be2,'rgba(239,68,68,.12)');
+shade(be2,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+[[90,'90P'],[100,'100P'],[107,'107P']].forEach(function(k){
+  el('line',{x1:X(k[0]),y1:padT,x2:X(k[0]),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+  txt(X(k[0]),H-10,k[1]);
+});
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 94.5','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 105.5','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

@@ -1,0 +1,118 @@
+<div class="hero">
+  <p class="kicker">第 39 课 · Advanced — NEUTRAL</p>
+  <h1>Short Call Condor <span class="cn">卖出看涨秃鹰</span></h1>
+  <p class="tagline">秃鹰倒着卖——赌大动，不赌方向。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 95C + 买入 100C</b><span>bear call spread<br>收 credit</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 105C + 卖出 110C</b><span>bull call spread<br>付 debit</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净收 $2</b><span>中间 100–105 亏满 $3<br>两端保留 $2</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖 95C、买 100C、买 105C、卖 110C，净收 $2。100–105 之间亏满 $3，B/E 在 97 和 108，95 以下和 110 以上保留 $2。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$2（≤95 或 ≥110）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">97 / 108</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$3（100–105 之间）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta ≈ 0</span><span>四腿对称，搭好那一刻方向中性</span></div>
+  <div class="greek"><span class="badge pos">Gamma +（100–105 最大）</span><span>中间买了两条腿，大动对你有利</span></div>
+  <div class="greek"><span class="badge neg">Theta −</span><span>净收 credit 但时间是敌人，横盘每天失血</span></div>
+  <div class="greek"><span class="badge pos">Vega +（小）</span><span>波动率膨胀帮你，事件前搭更顺</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>事件前赌大动：财报、FOMC 前后，方向不明但波动大</li>
+    <li>IV 处于自身历史高位时卖：credit 里含着贵出来的波动率溢价</li>
+    <li>不想猜方向：short strangle 的"有翅膀版"，两端都有保护</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 横盘磨到到期 + 事件后 IV 崩了还拿着</p>
+  <p class="body">两个代价：<b>赌大动结果横盘</b>——股价粘在 100–105，亏满 $3，是 credit 的 1.5 倍；<b>事件落地后不走</b>——波动率坍缩，gamma 优势消失，剩下的只有 theta 失血。Short condor 是事件型彩票，开奖后就走。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>它就是两个价差拼起来的</b>：95/100 bear call spread + 105/110 bull call spread，拆开看就没什么神秘的</li>
+    <li><b>最大亏损是 credit 的 1.5 倍</b>：$2 的 credit 对应 $3 的亏损，仓位按亏损端算，别按 credit 算</li>
+    <li><b>事件落地就考虑走</b>：不管涨跌，大动兑现或 IV 崩掉时，剩下的期望都是负的</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Short call condor 和 long call condor 的区别？</summary><p><span class="ans">方向反过来。</span>Long condor 付 debit 赌横盘（中间赚）；short condor 收 credit 赌大动（两端赚、中间亏）。</p></details>
+  <details><summary>Q2 · S=100 到期亏 $3，怎么算出来的？</summary><p><span class="ans">95C 值 $5（空头亏 5），100C/105C/110C 都归零，−5 + 2（credit）= −3。</span>中间区域 short 95C 全额亏损，credit 只补回来 $2。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-4,plMax=3;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return -M(0,s-95)+M(0,s-100)+M(0,s-105)-M(0,s-110)+2;};
+var s, be1=97, be2=108;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(34,197,94,.12)');
+shade(be1,be2,'rgba(239,68,68,.12)');
+shade(be2,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+[95,100,105,110].forEach(function(k){
+  el('line',{x1:X(k),y1:padT,x2:X(k),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+  txt(X(k),H-10,k+'C');
+});
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 97','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 108','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

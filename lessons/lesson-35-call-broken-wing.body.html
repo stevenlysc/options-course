@@ -1,0 +1,118 @@
+<div class="hero">
+  <p class="kicker">第 35 课 · Advanced — NEUTRAL</p>
+  <h1>Call Broken-Wing Butterfly <span class="cn">看涨折翼蝴蝶</span></h1>
+  <p class="tagline">蝴蝶长歪了——帐篷顶偏一边，赌横盘但留了一手。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买入 93C</b><span>付 $8.2<br>下侧翅膀，防暴跌穿仓</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 2×100C</b><span>收 $7.3<br>中间两腿，帐篷顶</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 105C</b><span>付 $1.7<br>上侧翅膀，只宽 5 点<br>净付 $2.5</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：买入 93C（$8.2）、卖出 2×100C（收 $7.3）、买入 105C（$1.7），净付 $2.5。上侧翼展只有 5 点，所以帐篷是歪的。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$4.5（S=100 赚满）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">95.5 / 104.5</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$2.5（≤93 亏满 debit）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta ≈ 0</span><span>三腿 delta 互相抵消，搭好那一刻基本中性</span></div>
+  <div class="greek"><span class="badge neg">Gamma −（100 附近最大）</span><span>中间卖了两条腿，股价靠近 100 时 gamma 最负</span></div>
+  <div class="greek"><span class="badge pos">Theta +（小）</span><span>净付 debit 但中间空头占优，每天小幅进账</span></div>
+  <div class="greek"><span class="badge neg">Vega −（小）</span><span>波动率膨胀对空头腿不利</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>判断横盘，但怕向上突破：上侧翼展窄，上涨穿仓只亏净 debit</li>
+    <li>对称蝴蝶太贵时：把不担心的一侧翼展收窄，debit 直接打下来</li>
+    <li>财报后波动率坍缩期：IV 回落时搭，vega 小不怕继续压</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 帐篷顶没站住 + 翼展收太窄</p>
+  <p class="body">两个代价：<b>股价不配合横盘</b>——跌破 93 或冲过 105，$2.5 的 debit 全亏；<b>为省 debit 把翼展压太小</b>——帐篷变成图钉，95.5–104.5 的盈利窗窄到几乎站不住。折翼省的是钱，丢的是容错。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>宽翼展放在你不怕的那一侧</b>：怕涨就把上侧收窄，怕跌就把下侧收窄，折翼的方向就是你的观点</li>
+    <li><b>Debit 别超过帐篷高度的四成</b>：超过这个比例，盈亏比就难看了，不如直接做对称蝴蝶</li>
+    <li><b>盈利窗可以用 B/E 先算好</b>：95.5–104.5，股价一出这个区间就别再"等等看"</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 折翼蝴蝶和对称蝴蝶的本质区别是什么？</summary><p><span class="ans">一侧翼展更窄。</span>对称蝴蝶两边翼展相等；折翼把不担心的一侧收窄，debit 更便宜，但那一侧的容错也没了。</p></details>
+  <details><summary>Q2 · S=100 到期时，这个组合赚多少？怎么算？</summary><p><span class="ans">$4.5。</span>93C 值 $7，两条 100C 到期归零，105C 归零，7 − 2.5（净 debit）= 4.5。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-3,plMax=6;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return M(0,s-93)-2*M(0,s-100)+M(0,s-105)-2.5;};
+var s, be1=95.5, be2=104.5;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+[93,100,105].forEach(function(k){
+  el('line',{x1:X(k),y1:padT,x2:X(k),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+  txt(X(k),H-10,k+'C');
+});
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 95.5','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 104.5','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
