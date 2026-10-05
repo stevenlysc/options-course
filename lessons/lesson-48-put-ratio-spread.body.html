@@ -1,0 +1,118 @@
+<div class="hero">
+  <p class="kicker">第 48 课 · Expert — VOLATILITY</p>
+  <h1>Put Ratio Spread <span class="cn">看跌比率价差</span></h1>
+  <p class="tagline">便宜卖出下行——赌它跌，但跌不深。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买入 100P</b><span>付约 $3.2<br>平值 long put</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 2× 95P</b><span>收约 $2.6<br>两倍 short put</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净付约 $0.5</b><span>95 赚满 $4.5<br>下行 B/E 90.5</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：S=$100，买入 100P（付约 $3.2），卖出 2 张 95P（收约 $2.6），净付约 $0.5。和 47 课的 call ratio spread 是镜像：一个赌"涨不动"，一个赌"跌不深"。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$4.5（S=95）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">90.5 / 99.5</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$90.5（S=0）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +（+0.03，基本中性）</span><span>long put 和 2 张 short put 的 delta 几乎抵消</span></div>
+  <div class="greek"><span class="badge pos">Theta +（小）</span><span>接近零成本建仓，每天收一点租</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>IV 上涨对两条 short 腿伤害更大</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>95 附近最危险：大跌时 delta 会快速转正</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>觉得"会跌但跌不深"：95 附近就是底，再往下没动力</li>
+    <li>想用几乎零成本表达温和看空：净付 $0.5，95 附近能赚 $4.5</li>
+    <li>IV 高的时候卖 vega：两条 short 腿吃 IV 回落</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 真暴跌了 + 跌破了还拿着</p>
+  <p class="body">95 是地板：到期正好 95 赚满 $4.5。但每再跌 $1 就多亏 $1（2 张 short put 减 1 张 long put = 净 1 张裸 short put），S=0 处最多亏 $90.5。赌"跌不深"就是在和恐慌对赌，90.5 一破必须认。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>和 47 课 call ratio spread 是镜像</b>：一个赌"涨不动"、一个赌"跌不深"，结构对称、死法对称，学通一个另一个不用再学</li>
+    <li><b>95 是重心，越接近越好</b>：到期价离 95 越远赚得越少，两边都一样</li>
+    <li><b>下行有底（股票跌不到 0），这是它唯一比 call ratio 温柔的地方</b>：最大亏损是算得出来的 $90.5，而 call ratio 上行无顶</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Put ratio spread 最多能亏多少？亏在哪？</summary><p><span class="ans">S=0 处亏 $90.5。</span>(100 − 2×95 − 0.5) 的绝对值——有界，因为股票跌不破 0，这是它和 call ratio 最大的不同。</p></details>
+  <details><summary>Q2 · 到期 S=95 和 S=80，各赚 / 亏多少？</summary><p><span class="ans">95：赚 $4.5；80：亏 $10.5。</span>95 时 (5 − 0.5)；80 时 (20 − 2×15 − 0.5) = −10.5，过了地板每跌 $1 多亏 $1。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-12,plMax=8;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return M(0,100-s)-2*M(0,95-s)-0.5;};
+var s, be1=90.5, be2=99.5;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'2×95P');
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100P');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 90.5','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 99.5','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

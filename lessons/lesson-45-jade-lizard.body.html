@@ -1,0 +1,120 @@
+<div class="hero">
+  <p class="kicker">第 45 课 · Advanced — NEUTRAL</p>
+  <h1>Jade Lizard <span class="cn">翡翠蜥蜴</span></h1>
+  <p class="tagline">带翅膀的 short put——上行没有风险。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 100P</b><span>收约 $3.2<br>裸 short put</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 105C + 买入 110C</b><span>收约 $1.7 / 付约 $0.7<br>bear call spread</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净收约 $4.0</b><span>100–105 赚满<br>上行最多亏 $1</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：S=$100，卖出 100P（收约 $3.2），卖出 105C（收约 $1.7）、买入 110C（付约 $0.7），净收约 $4.0。上行被 call spread 锁死，下行是一条裸 short put。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$4.0（100–105）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">96 / 109</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$96（S→0）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +（+0.3，轻微偏多）</span><span>short put 的正 delta 压过 call spread，起点小偏多</span></div>
+  <div class="greek"><span class="badge pos">Theta +</span><span>净收 $4.0 权利金，每天收租</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>IV 上涨会侵蚀组合价值</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>short 腿多，价格快涨快跌时 delta 跑得快</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>高 IV 想收租，又怕股票突然大涨把 short put 轧成"踏空式亏损"</li>
+    <li>中性偏多：觉得 100–105 是舒适区，涨也行、横盘也行</li>
+    <li>手里已经有 short put：加一个 105/110 的 bear call spread，直接升级成翡翠蜥蜴</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 下行暴跌 + 把"上行无风险"当成"没风险"</p>
+  <p class="body">上行确实被 105/110 的 call spread 锁死了——最坏只亏 <b>$1</b>（$5 宽度 − $4 credit）。但下行是裸的 short put：跌破 96 开始亏，S→0 最多亏 $96。翡翠蜥蜴的"无风险"只保上行不保下行，死法永远在下行。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>上行真"无风险"的前提：credit ≥ call spread 宽度</b>：宽度 $5、credit $4.0，上行最坏还亏 $1——只有收到 ≥ 宽度，上行才彻底安全</li>
+    <li><b>它就是 short put + bear call spread</b>：理解了这个，翡翠蜥蜴没有任何新东西</li>
+    <li><b>下行管理按 short put 的规矩来</b>：跌破 B/E 附近该 roll 就 roll，别被"蜥蜴"的名字麻痹了</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 翡翠蜥蜴等于哪两个策略相加？</summary><p><span class="ans">Short put + bear call spread。</span>卖 100P 收大钱，再配一个 105/110 的 bear call spread 给上行加盖——一加就是翡翠蜥蜴。</p></details>
+  <details><summary>Q2 · 上行在什么条件下才真正"无风险"？</summary><p><span class="ans">净收的 credit ≥ call spread 的宽度。</span>本例 $4.0 &lt; $5，所以 S≥110 时还亏 $1；只有收到 ≥$5，上行才彻底安全。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-18,plMax=8;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 4-M(0,100-s)-(M(0,s-105)-M(0,s-110));};
+var s, be1=96, be2=109;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100P');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105C');
+el('line',{x1:X(110),y1:padT,x2:X(110),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(110),H-10,'110C');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 96','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 109','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

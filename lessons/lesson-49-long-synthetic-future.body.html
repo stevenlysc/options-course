@@ -1,0 +1,113 @@
+<div class="hero">
+  <p class="kicker">第 49 课 · Expert — SYNTHETICS</p>
+  <h1>Long Synthetic Future <span class="cn">合成多头</span></h1>
+  <p class="tagline">不买股票的"持股"——payoff 和拿 100 股一模一样。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买入 100C</b><span>付约 $3.6<br>平值 long call</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 100P</b><span>收约 $3.2<br>平值 short put</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净付约 $0.5</b><span>payoff = S − 100.5<br>≈ 持有股票</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：S=$100，买入 100C（付 $3.6），卖出 100P（收 $3.2），净付 $0.5。到期 payoff 就是一条直线，和持有股票只差 $0.5 的成本。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">无限（和股票一样）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">100.5</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$100.5（S=0）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta +1.0</span><span>和持有 100 股一模一样，涨跌同步</span></div>
+  <div class="greek"><span class="badge pos">Theta ≈ 0</span><span>call 和 put 的时间损耗几乎抵消，只剩一点点融资成本——这正是 B/E 100.5 而不是 100 的原因</span></div>
+  <div class="greek"><span class="badge pos">Vega ≈ 0</span><span>IV 变化基本不影响组合价值</span></div>
+  <div class="greek"><span class="badge pos">Gamma ≈ 0</span><span>delta 不随价格漂移，永远是 1</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>想做多，但不想掏买 100 股的现金：保证金效率高得多</li>
+    <li>学合成关系：这是第一块砖，后面所有合成结构都从它长出来</li>
+    <li>除权 / 分红等事件的替代持仓思路：先理解 payoff，再谈差别</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 当股票拿，忘了它是期权</p>
+  <p class="body">payoff 和股票一样，但它不是股票：<b>short put 那条腿占保证金</b>，有提前被行权的风险；<b>没有分红</b>（除权时 call 会跟着贬值）；<b>到期必须处理</b>（roll 或行权），不能像股票一样"拿着不动"。可以把它当股票用，但别真忘了它是两条期权。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>这是理解所有合成关系的第一块砖</b>：long call + short put = long stock；反过来 long put + short call = short stock；两边再加减 100 股，collar、covered call 全是它的变形</li>
+    <li><b>put-call parity 就藏在净付的 $0.5 里</b>：C − P ≈ S − K×折现，多付的那一点就是时间的钱——B/E 100.5 不是 100，原因就在这</li>
+    <li><b>Delta 1 不等于风险和股票完全一样</b>：gamma / vega 接近零是像，但保证金占用、提前行权、分红处理都不像</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · 合成多头是哪两条腿？</summary><p><span class="ans">买 100C + 卖 100P。</span>同 strike、同到期，一多一空拼出一条直线。</p></details>
+  <details><summary>Q2 · B/E 为什么是 100.5 而不是 100？</summary><p><span class="ans">净付了 $0.5 的 debit。</span>Put-call parity：C 比 P 贵约 $0.4（时间的钱），这部分成本要先赚回来，所以 B/E 是 100.5。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-24,plMax=24;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return (s-100)-0.5;};
+var s, be=100.5;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be,'rgba(239,68,68,.12)');
+shade(be,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100C+100P');
+el('line',{x1:X(be),y1:padT,x2:X(be),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be),H-24,'B/E 100.5','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
