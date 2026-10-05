@@ -1,0 +1,118 @@
+<div class="hero">
+  <p class="kicker">第 57 课 · Expert — VOLATILITY</p>
+  <h1>Short Guts <span class="cn">卖出实值宽跨式</span></h1>
+  <p class="tagline">卖实值跨式：收 $13，但 $10 是要还的。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 95C</b><span>实值 call<br>收 $6.70</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 105P</b><span>实值 put<br>收 $6.25</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>净收 $13</b><span>95–105 之间只留 $3<br>$10 内在价值要还回去</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：S=100，卖出 95C（$6.70）+ 105P（$6.25），净收 $13。95–105 之间最多留 $3，两边大动无限亏。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="130" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$3（95–105 之间，$10 内在价值还回去）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">92 / 108</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">无限（两边）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge pos">Delta ≈0（中性）</span><span>开仓不赌方向，赌它不动</span></div>
+  <div class="greek"><span class="badge pos">Theta +（小）</span><span>每天收租，但只收得到 $3 时间价值的部分</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>short vol——波动率上升直接亏钱</span></div>
+  <div class="greek"><span class="badge neg">Gamma −（危险）</span><span>两条实值 short 腿，穿破 B/E 后亏损加速——无限风险的来源</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>预期横盘 + IV 高：波动率贵的时候收租，赚 IV 回落的钱</li>
+    <li>对比 short strangle：名义收 $13 看着多，但 95–105 之间只能留下 $3——$10 内在价值到期要还回去</li>
+    <li>老手策略：两边都是无限风险，保证金比 short strangle 高得多，新手别碰</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 被 $13 的 credit 骗了 + 穿破 B/E</p>
+  <p class="body">两个坑：<b>以为自己收了 $13</b>——95–105 之间到期，你只能留下 $3，$10 内在价值是欠条；<b style="color:#ef4444">大动穿 92/108 之后无限亏</b>——而且 B/E（92/108）比 short strangle（90/110）还窄，容错更小。卖之前先问自己：穿了之后有没有处理计划？没有就别卖。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>别数 $13，数 $3</b>：能真正落袋的只有 $3 时间价值——拿这个数字去算盈亏比，别拿 $13</li>
+    <li><b>保证金先问券商</b>：两条实值 short 腿占用的保证金远高于 short strangle，小资金别碰</li>
+    <li><b>它不是 short strangle 的升级版</b>：B/E 更窄（92/108 对 90/110）、留得更少——选它只因为你想要实值腿的流动性</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Short guts 净收 $13，到期股价钉在 100，能留下多少？</summary><p><span class="ans">$3。</span>两条实值腿各有 $5 内在价值，共 $10——到期要还回去。$13 里只有 $3 时间价值是真正赚到的。</p></details>
+  <details><summary>Q2 · 和 short strangle 的区别？</summary><p><span class="ans">收得多、留得少、B/E 更窄、保证金更高。</span>名义收 $13 对 $5，但 95–105 之间 short guts 只留 $3（strangle 留 $5）；B/E 92/108 对 90/110，容错更小。好处只有实值腿流动性通常更好。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=130,plMin=-24,plMax=4;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 13-M(0,s-95)-M(0,105-s);};
+var s, be1=92, be2=108;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(239,68,68,.12)');
+shade(be1,be2,'rgba(34,197,94,.12)');
+shade(be2,xMax,'rgba(239,68,68,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95C');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105P');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 92','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 108','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(130),H-10,'130');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
