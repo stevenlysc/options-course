@@ -1,0 +1,122 @@
+<div class="hero">
+  <p class="kicker">第 40 课 · Advanced — NEUTRAL</p>
+  <h1>Short Put Condor <span class="cn">卖出看跌秃鹰</span></h1>
+  <p class="tagline">四个 put 搭出来的秃鹰——和第 39 课的 short call condor 是同一张 payoff 图。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 110P + 卖出 95P</b><span>收 $10 / 收 $1.5<br>两头收租</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 105P + 买入 100P</b><span>付 $6.5 / 付 $3<br>中间买保护</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>秃鹰成型</b><span>两翼赚 $2<br>100–105 亏满 $3</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 110P（$10）、买入 105P（$6.5）、买入 100P（$3）、卖出 95P（$1.5），净收 $2。两翼赚钱，中间 100–105 亏钱。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">$2（≤95 或 ≥110）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">97 / 108</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$3（100–105 亏满）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge">Delta ~0</span><span>四条腿两两对冲，方向基本中性</span></div>
+  <div class="greek"><span class="badge pos">Theta +</span><span>净收 credit，时间流逝是纯利润</span></div>
+  <div class="greek"><span class="badge neg">Vega −</span><span>怕波动率放大，尤其怕 IV 胀大后价格往中间挤</span></div>
+  <div class="greek"><span class="badge neg">Gamma −</span><span>靠近 100–105 时亏损加速</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>大涨或大跌都行、只怕横盘：方向不重要，重要的是到期别磨在 100–105</li>
+    <li>IV 高位收租：两条 short put 吃时间价值</li>
+    <li>想做空波动率但不想选方向：condor 把方向 bet 拿掉，只剩"别在中间"</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 卡在中间 + credit 太薄</p>
+  <p class="body">Short put condor 的命门是<b>到期价落在 100–105，亏满 $3</b>——最大亏损是最大盈利的 1.5 倍，盈亏比天然不对称。第二个死法是 credit 收太薄：上限本来就只有 $2，开仓时再让出去一块，等于白给庄家打工。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>它和 short call condor 是同一张 payoff 图</b>：put-call parity 下 B/E、最大盈亏全对得上，哪边流动性好做哪边，不用两边都开</li>
+    <li><b>credit 厚度决定一切</b>：上限锁死 $2，credit 每薄一点，盈亏比就难看一点</li>
+    <li><b>中间被套别加仓摊平</b>：往 100–105 加仓只会把 max loss 撑大，认亏走人</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Short put condor 和 short call condor 到底什么关系？</summary><p><span class="ans">Put-call parity 下是同一张 payoff 图。</span>一个用四个 put，一个用四个 call——B/E 97/108、中间 100–105 亏满 $3、两翼各赚 $2，全对得上。选流动性好的那组做就行。</p></details>
+  <details><summary>Q2 · 什么时候 short put condor 比 short call condor 更合适？</summary><p><span class="ans">Put skew 高、put 更贵的时候。</span>Short 那两条 put 能收到更厚的 credit，上限 $2 更容易达标；反之 call 那边便宜就做 call。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-4,plMax=4;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 2-M(0,110-s)+M(0,105-s)+M(0,100-s)-M(0,95-s);};
+var s, be1=97, be2=108;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(34,197,94,.12)');
+shade(be1,be2,'rgba(239,68,68,.12)');
+shade(be2,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95P');
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100P');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105P');
+el('line',{x1:X(110),y1:padT,x2:X(110),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(110),H-10,'110P');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 97','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 108','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

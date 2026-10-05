@@ -1,0 +1,120 @@
+<div class="hero">
+  <p class="kicker">第 43 课 · Advanced — DIRECTIONAL</p>
+  <h1>Bull Put Ladder <span class="cn">牛市看跌梯子</span></h1>
+  <p class="tagline">牛市价差上再加一条 long put：上面小赚封顶，下面藏一张暴跌彩票。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>买入 95P + 买入 100P</b><span>付 $1.5 / 付 $3<br>两条 long 打底</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>卖出 105P</b><span>收 $6<br>高位收租</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>梯子搭好</b><span>≥103.5 赚 $1.5<br>95–100 亏满 $3.5</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：买入 95P（$1.5），买入 100P（$3），卖出 105P（$6），净收 $1.5。涨了小赚 $1.5，95–100 亏满，跌破 91.5 越跌越赚。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">几乎无限（≤91.5 越跌越赚）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">91.5 / 103.5</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$3.5（95–100 亏满）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge">Delta ± 看位置</span><span>105 上方 ~0，跌破 100 后转空、越跌 delta 越负</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>两条 long 的 vega 占上风，IV 扩张是燃料</span></div>
+  <div class="greek"><span class="badge">Theta ± 看位置</span><span>95–100 亏钱区时间是敌人，跌破 91.5 后时间变朋友</span></div>
+  <div class="greek"><span class="badge">Gamma 混合</span><span>100 下方 long gamma 接管，跌起来加速赚</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>温和看涨 + 想要尾部彩票：涨了赚 $1.5，崩盘了不封顶</li>
+    <li>给多头组合买便宜的 downside 保护</li>
+    <li>IV 低位：两条 long put 便宜时搭，IV 扩张时止盈</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 在 95–100 之间磨</p>
+  <p class="body">最贵的区域是<b>95–100：亏满 $3.5</b>。小跌不赚钱——跌破 91.5 才是彩票兑奖区，95–100 只是坟场。第二个死法：大跌来了但 IV 没扩张，两条 long put 的涨幅被时间损耗吃掉大半，"无限收益"只兑现了一半。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>别把它当看涨主仓</b>：上涨端最多拿回 $1.5 的净 credit，它是"小涨 + 崩盘彩票"的组合</li>
+    <li><b>IV 扩张时是止盈窗口</b>：long vega 的利润主要来自波动率起飞，别等 IV 回落</li>
+    <li><b>95–100 是坟场</b>：开仓前先想好跌破 91.5 的剧本，没有就别开</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Bull put ladder 的"无限"在哪一边？</summary><p><span class="ans">下跌一边。</span>跌破 91.5 后越跌越赚（put 最多跌到 0，所以是"几乎"无限）；上涨一边最多拿回 $1.5 的净 credit。</p></details>
+  <details><summary>Q2 · 95–100 为什么是坟场？</summary><p><span class="ans">那个区间亏满 $3.5。</span>小跌不赚钱：105P 的 short 端在亏，两条 long 还没接上力，非要跌破 91.5 彩票才兑奖。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-5,plMax=14;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 1.5+M(0,95-s)+M(0,100-s)-M(0,105-s);};
+var s, be1=91.5, be2=103.5;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(34,197,94,.12)');
+shade(be1,be2,'rgba(239,68,68,.12)');
+shade(be2,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95P');
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100P');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105P');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 91.5','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 103.5','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>

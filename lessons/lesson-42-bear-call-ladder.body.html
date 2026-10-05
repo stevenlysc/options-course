@@ -1,0 +1,120 @@
+<div class="hero">
+  <p class="kicker">第 42 课 · Advanced — DIRECTIONAL</p>
+  <h1>Bear Call Ladder <span class="cn">熊市看涨梯子</span></h1>
+  <p class="tagline">熊市价差上再加一条 long call：下面小赚锁死，上面留一张无限的彩票。</p>
+</div>
+
+<div class="card">
+  <p class="sec">结构 · 三步搭出来</p>
+  <div class="steps">
+    <div class="step"><b>卖出 95C</b><span>收 $6.5<br>底部收租</span></div>
+    <div class="arr">+</div>
+    <div class="step"><b>买入 100C + 买入 105C</b><span>付 $3.5 / 付 $1.5<br>两条 long 保险加彩票</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>梯子搭好</b><span>≤96.5 赚 $1.5<br>100–105 亏满 $3.5</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">到期 Payoff · 拖动滑杆看盈亏</p>
+  <p class="muted">示例：卖出 95C（$6.5），买入 100C（$3.5），买入 105C（$1.5），净收 $1.5。跌了小赚，大涨大赚，最怕横在中间。</p>
+  <svg id="pl" viewBox="0 0 400 250" class="chart"></svg>
+  <input id="px" type="range" min="80" max="120" value="100" step="1" class="slider">
+  <p id="plread" class="readout"></p>
+</div>
+
+<div class="card">
+  <p class="sec">三个关键数字</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">最大盈利</div><div class="v pos">无限（≥108.5 越涨越赚）</div></div>
+    <div class="kpi"><div class="k">盈亏平衡点</div><div class="v">96.5 / 108.5</div></div>
+    <div class="kpi"><div class="k">最大亏损</div><div class="v neg">$3.5（100–105 亏满）</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="sec">希腊字母脾气</p>
+  <div class="greek"><span class="badge">Delta ± 看位置</span><span>95 附近偏空，过了 105 两条 long 接管转多</span></div>
+  <div class="greek"><span class="badge pos">Vega +</span><span>两条 long 的 vega 占上风，要波动率</span></div>
+  <div class="greek"><span class="badge">Theta ± 看位置</span><span>亏钱时时间是敌人，开始赚钱后时间变朋友</span></div>
+  <div class="greek"><span class="badge">Gamma 混合</span><span>100 下方 short gamma，105 上方 long gamma</span></div>
+</div>
+
+<div class="card">
+  <p class="sec">适用场景</p>
+  <ul class="ul">
+    <li>看跌但怕踏空：跌了赚 $1.5 保底，万一大涨还有无限端接着</li>
+    <li>赌大波动：事件之前，两边大动都行，别横盘</li>
+    <li>IV 低位：long vega 便宜，波动率扩张时占便宜</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <p class="sec">最常见的死法 · 横盘磨死</p>
+  <p class="body">Bear call ladder 最常见的死法不是方向看错，是<b>到期价卡在 100–105，亏满 $3.5</b>——横盘才是常态，大涨只是小概率事件。第二个死法是 IV 一直起不来：两条 long call 每天被时间啃，无限收益看着美，多数死在横盘里。</p>
+</div>
+
+<div class="card">
+  <p class="sec">实战小贴士</p>
+  <ul class="ul">
+    <li><b>按"中间亏满"来配仓位</b>：横盘是大概率，无限收益是小概率彩票，仓位别按彩票配</li>
+    <li><b>波动率是燃料</b>：IV 长期低迷别开，开了也别久拿</li>
+    <li><b>大涨后分批止盈 long 端</b>：无限不等于一直拿着，IV 回落会吃掉一大块利润</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sec">随堂小测</p>
+  <details><summary>Q1 · Bear call ladder 什么时候赚得最多？</summary><p><span class="ans">大涨的时候，上不封顶。</span>108.5 上方每涨 1 块多赚 1 块；看跌的那面最多赚净收的 $1.5。</p></details>
+  <details><summary>Q2 · 它和 bull call ladder 是镜像吗？</summary><p><span class="ans">方向完全反过来。</span>Bull call ladder：中间赚、上方无限亏；bear call ladder：中间亏、上方无限赚。同一组 strike，正负号全反。</p></details>
+</div>
+
+<script>
+(function(){
+var svg=document.getElementById('pl');
+var NS='http://www.w3.org/2000/svg';
+var W=400,H=250,padL=46,padR=14,padT=14,padB=28;
+var xMin=80,xMax=120,plMin=-5,plMax=14;
+function X(s){return padL+(s-xMin)/(xMax-xMin)*(W-padL-padR);}
+function Y(p){return padT+(plMax-p)/(plMax-plMin)*(H-padT-padB);}
+function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+function txt(x,y,s,fill){var t=el('text',{x:x,y:y,'text-anchor':'middle',fill:fill||'#8b93a7','font-size':10});t.textContent=s;return t;}
+function shade(a,b,color){
+  var pts=X(a)+','+Y(0)+' ';
+  for(var s=a;s<=b;s+=1){pts+=X(s)+','+Y(pl(s))+' ';}
+  pts+=X(b)+','+Y(0);
+  el('polygon',{points:pts,fill:color});
+}
+var M=Math.max;
+var pl=function(s){return 1.5-M(0,s-95)+M(0,s-100)+M(0,s-105);};
+var s, be1=96.5, be2=108.5;
+el('line',{x1:padL,y1:Y(0),x2:W-padR,y2:Y(0),stroke:'#8b93a7','stroke-dasharray':'4 3','stroke-width':1});
+shade(xMin,be1,'rgba(34,197,94,.12)');
+shade(be1,be2,'rgba(239,68,68,.12)');
+shade(be2,xMax,'rgba(34,197,94,.12)');
+var d='M'+X(xMin)+','+Y(pl(xMin));for(s=xMin+1;s<=xMax;s+=1){d+=' L'+X(s)+','+Y(pl(s));}
+el('path',{d:d,fill:'none',stroke:'#22c55e','stroke-width':2.5});
+el('line',{x1:X(95),y1:padT,x2:X(95),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(95),H-10,'95C');
+el('line',{x1:X(100),y1:padT,x2:X(100),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(100),H-10,'100C');
+el('line',{x1:X(105),y1:padT,x2:X(105),y2:H-padB,stroke:'#8b93a7','stroke-dasharray':'3 3','stroke-width':1,opacity:.6});
+txt(X(105),H-10,'105C');
+el('line',{x1:X(be1),y1:padT,x2:X(be1),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be1),H-24,'B/E 96.5','#f59e0b');
+el('line',{x1:X(be2),y1:padT,x2:X(be2),y2:H-padB,stroke:'#f59e0b','stroke-dasharray':'3 3','stroke-width':1.2});
+txt(X(be2),H-24,'B/E 108.5','#f59e0b');
+txt(16,Y(0)-5,'0');txt(X(80),H-10,'80');txt(X(120),H-10,'120');
+var dot=el('circle',{r:6,fill:'#22c55e',stroke:'#fff','stroke-width':2});
+var read=document.getElementById('plread');
+var slider=document.getElementById('px');
+function upd(){
+var S=parseFloat(slider.value),p=pl(S);
+dot.setAttribute('cx',X(S));dot.setAttribute('cy',Y(p));
+dot.setAttribute('fill',p>=0?'#22c55e':'#ef4444');
+read.textContent='到期股价 $'+S+'  →  组合 '+(p>=0?'+$':'-$')+Math.abs(p).toFixed(2);
+read.style.color=p>=0?'#22c55e':'#ef4444';
+}
+slider.addEventListener('input',upd);upd();
+})();
+</script>
